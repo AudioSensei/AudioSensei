@@ -7,46 +7,151 @@ namespace AudioSensei.Bass
     {
         private const string Bass = "bass";
 
-        [DllImport(Bass, EntryPoint = "BASS_Init")]
-        internal static extern bool Init(int device, uint frequency, uint flags, IntPtr window, IntPtr clsid);
+        public static void Init()
+        {
+            if (!BASS_Init(-1, 44000, 0, IntPtr.Zero, IntPtr.Zero))
+            {
+                throw new BassException($"Init failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_Free")]
-        internal static extern bool Free();
+        public static void Free()
+        {
+            if (!BASS_Free())
+            {
+                throw new BassException($"Free failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_StreamFree")]
-        internal static extern bool StreamFree(uint handle);
+        public static uint CreateStreamFromFile(string filePath)
+        {
+            var handle = BASS_StreamCreateFile(false, filePath, 0, 0, unchecked((uint) int.MinValue));
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelPlay")]
-        internal static extern bool ChannelPlay(uint handle, bool restart = false);
+            if (handle == 0)
+            {
+                throw new BassException("StreamCreateFile failed");
+            }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelPause")]
-        internal static extern bool ChannelPause(uint handle);
+            return handle;
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelStop")]
-        internal static extern bool ChannelStop(uint handle);
+        public static void FreeStream(uint handle)
+        {
+            if (!BASS_StreamFree(handle))
+            {
+                throw new BassException("StreamFree failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelIsActive")]
-        internal static extern uint ChannelIsActive(uint handle);
+        public static void PlayChannel(uint handle, bool restart = false)
+        {
+            if (!BASS_ChannelPlay(handle, restart))
+            {
+                throw new BassException($"ChannelPlay failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelGetLength")]
-        internal static extern ulong ChannelGetLength(uint handle, uint mode);
+        public static void PauseChannel(uint handle)
+        {
+            if (!BASS_ChannelPause(handle))
+            {
+                throw new BassException($"ChannelPause failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelGetPosition")]
-        internal static extern ulong ChannelGetPosition(uint handle, uint mode);
+        public static void StopChannel(uint handle)
+        {
+            if (!BASS_ChannelStop(handle))
+            {
+                throw new BassException($"ChannelStop failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelGetAttribute")]
-        internal static extern bool ChannelGetAttribute(uint handle, uint attribute, ref float value);
+        public static float GetChannelAttribute(uint handle, ChannelAttribute attribute)
+        {
+            var value = 0.0f;
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelSetAttribute")]
-        internal static extern bool ChannelSetAttribute(uint handle, uint attribute, float value);
+            if (!BASS_ChannelGetAttribute(handle, (uint) attribute, ref value))
+            {
+                throw new BassException($"ChannelGetAttribute failed");
+            }
 
-        [DllImport(Bass, EntryPoint = "BASS_ChannelBytes2Seconds")]
-        internal static extern double ChannnelBytes2Seconds(uint handle, ulong position);
+            return value;
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_ErrorGetCode")]
-        internal static extern uint ErrorGetCode();
+        public static void SetChannelAttribute(uint handle, ChannelAttribute attribute, float value)
+        {
+            if (!BASS_ChannelSetAttribute(handle, (uint) attribute, value))
+            {
+                throw new BassException($"ChannelSetAttribute failed");
+            }
+        }
 
-        [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
-        internal static extern uint StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, uint flags);
+        public static ulong GetChannelLength(uint handle, LengthMode mode)
+        {
+            return BASS_ChannelGetLength(handle, (uint) mode);
+        }
+
+        public static ulong GetChannelPosition(uint handle, LengthMode mode)
+        {
+            return BASS_ChannelGetPosition(handle, (uint) mode);
+        }
+
+        public static ChannelStatus GetChannelStatus(uint handle)
+        {
+            return (ChannelStatus) BASS_ChannelIsActive(handle);
+        }
+
+        public static double ConvertBytesToSeconds(uint handle, ulong position)
+        {
+            return BASS_ChannelBytes2Seconds(handle, position);
+        }
+
+        public static uint GetLastErrorCode()
+        {
+            return BASS_ErrorGetCode();
+        }
+
+        [DllImport(Bass)]
+        private static extern bool BASS_Init(int device, uint frequency, uint flags, IntPtr window, IntPtr clsid);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_Free();
+
+        [DllImport(Bass)]
+        private static extern bool BASS_StreamFree(uint handle);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelPlay(uint handle, bool restart = false);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelPause(uint handle);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelStop(uint handle);
+
+        [DllImport(Bass)]
+        private static extern uint BASS_ChannelIsActive(uint handle);
+
+        [DllImport(Bass)]
+        private static extern ulong BASS_ChannelGetLength(uint handle, uint mode);
+
+        [DllImport(Bass)]
+        private static extern ulong BASS_ChannelGetPosition(uint handle, uint mode);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelGetAttribute(uint handle, uint attribute, ref float value);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelSetAttribute(uint handle, uint attribute, float value);
+
+        [DllImport(Bass)]
+        private static extern double BASS_ChannelBytes2Seconds(uint handle, ulong position);
+
+        [DllImport(Bass)]
+        private static extern uint BASS_ErrorGetCode();
+
+        [DllImport(Bass)]
+        private static extern uint BASS_StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, uint flags);
     }
 }
