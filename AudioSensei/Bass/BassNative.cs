@@ -8,7 +8,7 @@ namespace AudioSensei.Bass
         private const string Bass = "bass";
 
         [DllImport(Bass, EntryPoint = "BASS_Init")]
-        internal static extern bool Init(int device, uint frequency, uint flags, IntPtr win, IntPtr clsid);
+        internal static extern bool Init(int device, uint frequency, uint flags, IntPtr window, IntPtr clsid);
 
         [DllImport(Bass, EntryPoint = "BASS_Free")]
         internal static extern bool Free();
@@ -41,12 +41,12 @@ namespace AudioSensei.Bass
         internal static extern bool ChannelSetAttribute(uint handle, uint attribute, float value);
 
         [DllImport(Bass, EntryPoint = "BASS_ChannelBytes2Seconds")]
-        internal static extern double ChanbnelBytes2Seconds(uint handle, ulong position);
+        internal static extern double ChannnelBytes2Seconds(uint handle, ulong position);
 
         [DllImport(Bass, EntryPoint = "BASS_ErrorGetCode")]
-        internal static extern uint GetLastError();
+        internal static extern uint ErrorGetCode();
 
         [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
-        internal static extern uint CreateFileStream(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, uint flags);
+        internal static extern uint StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, uint flags);
     }
 }
