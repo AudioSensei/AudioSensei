@@ -34,23 +34,23 @@
 
 							<TextBlock Grid.Column="0" TextAlignment="Left" Margin="10,5">TRACKS</TextBlock>
 
-							<Button Height="30" Width="150" Margin="10,5">All tracks</Button>
-							<Button Height="30" Width="150" Margin="10,5">Favourite tracks</Button>
-							<Button Height="30" Width="150" Margin="10,5">Recently played</Button>
+							<Button Height="30" Width="150" Margin="10,5" Command="{Binding AllTracksCommand}">All tracks</Button>
+							<Button Height="30" Width="150" Margin="10,5" Command="{Binding FavouriteTracksCommand}">Favourite tracks</Button>
+							<Button Height="30" Width="150" Margin="10,5" Command="{Binding RecentlyPlayedTracksCommand}">Recently played</Button>
 
 							<TextBlock TextAlignment="Left" Margin="10,5,0,0">PLAYLISTS</TextBlock>
 
-							<ItemsControl Margin="0,0,0,5">
+							<ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}">
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<Button Height="30" Width="150" Margin="10,5,10,0">
-											<TextBlock/>
+											<TextBlock Text="{Binding Name}"/>
 										</Button>
 									</DataTemplate>
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>
 
-							<Button Height="30" Width="150" Margin="10,5,10,5">
+							<Button Height="30" Width="150" Margin="10,5,10,5" Command="{Binding AddPlaylistCommand}">
 								<Grid Width="150">
 									<TextBlock HorizontalAlignment="Center">Add</TextBlock>
 								</Grid>
@@ -62,65 +62,61 @@
 		</StackPanel>
 
 		<Grid Grid.Row="0" Grid.Column="1">
-			<TabControl>
+			<TabControl SelectedIndex="{Binding SelectedPageIndex}">
 				<TabItem>
-					<DataGrid SelectionMode="Single">
+					<DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Items="{Binding Tracks}" >
 						<DataGrid.Columns>
-							<DataGridTemplateColumn Header="Source">
-								<DataGridTemplateColumn.CellTemplate>
-									<DataTemplate>
-										<Image Width="20" Height="20" />
-									</DataTemplate>
-								</DataGridTemplateColumn.CellTemplate>
-							</DataGridTemplateColumn>
-							<DataGridTextColumn Header="Name" />
-							<DataGridTextColumn Header="Author" />
+							<DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+							<DataGridTextColumn Header="Author" Binding="{Binding Author}" />
+							<DataGridTextColumn Header="Url" Binding="{Binding Url}" />
 						</DataGrid.Columns>
 					</DataGrid>
 				</TabItem>
+
+				<TabItem></TabItem>
+				<TabItem></TabItem>
 			</TabControl>
 		</Grid>
 
 		<Grid Grid.Row="1" Grid.ColumnSpan="2">
 			<Grid ColumnDefinitions="*,500,*" RowDefinitions="*,*">
 				<StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" >
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding ShuffleCommand}">
 						<Image Source="/Assets/shuffle.png"/>
 					</Button>
 
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding PreviousCommand}">
 						<Image Source="/Assets/rewind.png"/>
 					</Button>
 
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding PlayOrPauseCommand}">
 						<Image Source="/Assets/play-pause.png"/>
 					</Button>
 
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding StopCommand}">
 						<Image Source="/Assets/stop.png"/>
 					</Button>
 
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding NextCommand}">
 						<Image Source="/Assets/fast-forward.png"/>
 					</Button>
 
-					<Button Classes="PlayerButton">
+					<Button Classes="PlayerButton" Command="{Binding RepeatCommand}">
 						<Image Source="/Assets/repeat.png"/>
 					</Button>
 				</StackPanel>
 
 				<StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical">
 					<Grid ColumnDefinitions="*,*">
-						<TextBlock Grid.Column="0" Text="00:00:00" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left" />
-						<TextBlock Grid.Column="1" Text="00:00:00" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" />
+						<TextBlock Grid.Column="0" Text="{Binding CurrentTime}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left" />
+						<TextBlock Grid.Column="1" Text="{Binding TotalTime}" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" />
 					</Grid>
 
-					<ProgressBar Width="500" Margin="0,0,0,0" />
+					<ProgressBar Value="{Binding Total}" Margin="0,0,0,0" />
 				</StackPanel>
 
 				<StackPanel Grid.Column="2" Grid.RowSpan="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-					<Image Width="25" Height="25" />
-					<Slider Width="100" Maximum="100" />
+					<Slider Width="100" Maximum="100" Value="{Binding Volume, Mode=TwoWay}" />
 				</StackPanel>
 			</Grid>
 		</Grid>

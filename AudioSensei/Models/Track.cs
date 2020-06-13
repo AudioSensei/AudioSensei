@@ -6,13 +6,15 @@ namespace AudioSensei.Models
     {
         [JsonIgnore]
         public string Name { get; set; }
+        public string Author { get; set; }
         public Source Source { get; }
         public string Url { get; }
 
         [JsonConstructor]
-        public Track(Source source, string url)
+        public Track(string author, Source source, string url)
         {
             Name = "";
+            Author = author;
             Source = source;
             Url = url;
         }
