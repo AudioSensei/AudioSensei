@@ -1,0 +1,40 @@
+name: .NET Core CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2.2.0
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1.5.0
+      with:
+        dotnet-version: 3.1
+      
+    - name: Install dependencies
+      run: dotnet restore
+      
+    - name: Build Windows
+      run: dotnet publish -r win-x64 -c Release -o "${{github.workspace}}/Build/win-x64"
+      
+    - name: Build Linux
+      run: dotnet publish -r linux-x64 -c Release -o "${{github.workspace}}/Build/linux-x64"
+      
+    - name: Test
+      run: dotnet test
+      
+    - name: Upload Windows
+      uses: actions/upload-artifact@v2.0.1
+      with:
+        name: Windows
+        path: ${{github.workspace}}/Build/win-x64
+
+    - name: Upload Linux
+      uses: actions/upload-artifact@v2.0.1
+      with:
+        name: Linux
+        path: ${{github.workspace}}/Build/linux-x64
