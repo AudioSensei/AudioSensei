@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace AudioSensei.Models
 {
-    public struct Playlist
+    public struct Playlist : IEquatable<Playlist>
     {
         public string Name { get; }
         public string Author { get; }
@@ -20,6 +21,31 @@ namespace AudioSensei.Models
             Author = author;
             Description = description;
             this.tracks = tracks;
+        }
+
+        public bool Equals(Playlist other)
+        {
+            return Equals(tracks, other.tracks) && Name == other.Name && Author == other.Author && Description == other.Description;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Playlist other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(tracks, Name, Author, Description);
+        }
+
+        public static bool operator ==(Playlist left, Playlist right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Playlist left, Playlist right)
+        {
+            return !left.Equals(right);
         }
     }
 }
