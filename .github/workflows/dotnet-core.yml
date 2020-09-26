@@ -38,5 +38,5 @@ jobs:
     - name: Upload ${{ matrix.target }}
       uses: actions/upload-artifact@v2.0.1
       with:
-        name: VirusTotalChecker.Console-${{ matrix.target }}
+        name: AudioSensei-${{ matrix.target }}
         path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}/publish
