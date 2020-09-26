@@ -15,12 +15,12 @@ namespace AudioSensei.ViewModels
     {
         public float Volume
         {
-            get => IsInitialized() ? BassNative.GetChannelAttribute(handle, ChannelAttribute.VolumeLevel) * 100f : 100f;
+            get => IsInitialized() ? handle.GetChannelAttribute(ChannelAttribute.VolumeLevel) * 100f : 100f;
             set
             {
                 if (IsInitialized())
                 {
-                    BassNative.SetChannelAttribute(handle, ChannelAttribute.VolumeLevel, value / 100f);
+                    handle.SetChannelAttribute(ChannelAttribute.VolumeLevel, value / 100f);
                     this.RaisePropertyChanged("Volume");
                 }
             }
@@ -81,12 +81,12 @@ namespace AudioSensei.ViewModels
         public ReactiveCommand<Unit, Unit> CreatePlaylistCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> CancelPlaylistCreationCommand { get; private set; }
 
-		private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000.0) };
-		private readonly Random random = new Random();
+        private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000.0) };
+        private readonly Random random = new Random();
 
         private Track? previousTrack = null;
 
-        private uint handle = 0;
+        private BassHandle handle = BassHandle.Null;
 
         private int selectedPageIndex = 0;
         private int selectedIndex = -1;
@@ -100,16 +100,16 @@ namespace AudioSensei.ViewModels
         private bool repeat = false;
         private bool shuffle = false;
     
-    	public MainWindowViewModel()
-		{
-            BassNative.Init();
+        public MainWindowViewModel()
+        {
+            BassNative.Initialize();
 
-		    InitializeCommands();
+            InitializeCommands();
             LoadPlaylists();
 
             timer.Tick += Timer_Tick;
             timer.Start();
-		}
+        }
 
         ~MainWindowViewModel()
         {
@@ -120,7 +120,7 @@ namespace AudioSensei.ViewModels
         private void InitializeCommands()
         {
             PlayOrPauseCommand = ReactiveCommand.Create(PlayOrPause);
-            StopCommand = ReactiveCommand.Create(() => StopInternal());
+            StopCommand = ReactiveCommand.Create(StopInternal);
             NextCommand = ReactiveCommand.Create(() => Next(repeat, shuffle));
             PreviousCommand = ReactiveCommand.Create(() => Previous(repeat, shuffle));
             RepeatCommand = ReactiveCommand.Create(Repeat);
@@ -308,8 +308,8 @@ namespace AudioSensei.ViewModels
         {
             if (IsInitialized())
             {
-                var totalTime = BassNative.ConvertBytesToSeconds(handle, BassNative.GetChannelLength(handle, LengthMode.Bytes));
-                var currentTime = BassNative.ConvertBytesToSeconds(handle, BassNative.GetChannelPosition(handle, LengthMode.Bytes));
+                var totalTime = handle.ConvertBytesToSeconds(handle.GetChannelLength(LengthMode.Bytes));
+                var currentTime = handle.ConvertBytesToSeconds(handle.GetChannelPosition(LengthMode.Bytes));
 
                 if (totalTime - currentTime < 0.5)
                 {
@@ -343,27 +343,27 @@ namespace AudioSensei.ViewModels
 
         private bool IsInitialized()
         {
-            return handle != 0;
+            return handle != BassHandle.Null;
         }
 
         private bool IsPlaying()
         {
-            return IsInitialized() && BassNative.GetChannelStatus(handle) == ChannelStatus.Playing;
+            return IsInitialized() && handle.GetChannelStatus() == ChannelStatus.Playing;
         }
 
         private bool IsPaused()
         {
-            return IsInitialized() && BassNative.GetChannelStatus(handle) == ChannelStatus.Paused;
+            return IsInitialized() && handle.GetChannelStatus() == ChannelStatus.Paused;
         }
 
         private double GetCurrentTime()
         {
-            return IsInitialized() ? BassNative.ConvertBytesToSeconds(handle, BassNative.GetChannelPosition(handle, LengthMode.Bytes)) : 0.0;
+            return IsInitialized() ? handle.ConvertBytesToSeconds(handle.GetChannelPosition(LengthMode.Bytes)) : 0.0;
         }
 
         private double GetTotalTime()
         {
-            return IsInitialized() ? BassNative.ConvertBytesToSeconds(handle, BassNative.GetChannelLength(handle, LengthMode.Bytes)) : 0.0;
+            return IsInitialized() ? handle.ConvertBytesToSeconds(handle.GetChannelLength(LengthMode.Bytes)) : 0.0;
         }
 
         private void PlayInternal(string filePath)
@@ -372,12 +372,12 @@ namespace AudioSensei.ViewModels
             {
                 if (IsInitialized())
                 {
-                    BassNative.StopChannel(handle);
-                    BassNative.FreeStream(handle);
+                    handle.StopChannel();
+                    handle.FreeStream();
                 }
 
                 handle = BassNative.CreateStreamFromFile(filePath);
-                BassNative.PlayChannel(handle);
+                handle.PlayChannel();
             }
         }
 
@@ -385,7 +385,7 @@ namespace AudioSensei.ViewModels
         {
             if (IsInitialized())
             {
-                BassNative.PlayChannel(handle);
+                handle.PlayChannel();
             }
         }
 
@@ -393,7 +393,7 @@ namespace AudioSensei.ViewModels
         {
             if (IsInitialized())
             {
-                BassNative.PauseChannel(handle);
+                handle.PauseChannel();
             }
         }
 
@@ -401,9 +401,9 @@ namespace AudioSensei.ViewModels
         {
             if (IsInitialized())
             {
-                BassNative.StopChannel(handle);
-                BassNative.FreeStream(handle);
+                handle.StopChannel();
+                handle.FreeStream();
             }
         }
-	}
+    }
 }

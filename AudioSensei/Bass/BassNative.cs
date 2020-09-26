@@ -1,33 +1,69 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace AudioSensei.Bass
 {
-    internal class BassNative
+    internal static class BassNative
     {
         private const string Bass = "bass";
 
-        public static void Init()
+        private static readonly object LoadLock = new object();
+
+        public static void Initialize(int device = -1, uint frequency = 44000)
         {
-            if (!BASS_Init(-1, 44000, 0, IntPtr.Zero, IntPtr.Zero))
+            lock (LoadLock)
             {
-                throw new BassException($"Init failed");
+                string filter;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    filter = "bass*.dll";
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    filter = "libbass*.so";
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    filter = "libbass*.dylib";
+                else
+                    throw new PlatformNotSupportedException();
+
+                const uint unicode = 0x80000000;
+                foreach (var file in Directory.EnumerateFiles("BassPlugins", filter))
+                {
+                    if (LoadPlugin(file, unicode) == 0)
+                        throw new BassException($"Loading {file} as plugin failed");
+                }
+
+                var window = IntPtr.Zero;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    window = GetActiveWindow();
+                }
+
+                if (!BASS_Init(device, frequency, 0, window, IntPtr.Zero))
+                {
+                    throw new BassException("Init failed");
+                }
             }
         }
+
+        [DllImport("user32")]
+        private static extern IntPtr GetActiveWindow();
 
         public static void Free()
         {
-            if (!BASS_Free())
+            lock (LoadLock)
             {
-                throw new BassException($"Free failed");
+                UnloadPlugin(0);
+                if (!BASS_Free())
+                {
+                    throw new BassException("Free failed");
+                }
             }
         }
 
-        public static uint CreateStreamFromFile(string filePath)
+        public static BassHandle CreateStreamFromFile(string filePath)
         {
-            var handle = BASS_StreamCreateFile(false, filePath, 0, 0, unchecked((uint) int.MinValue));
+            var handle = BASS_StreamCreateFile(false, filePath, 0, 0, StreamFlags.AsyncFile | StreamFlags.Unicode | StreamFlags.StreamPrescan | StreamFlags.StreamAutofree);
 
-            if (handle == 0)
+            if (handle == BassHandle.Null)
             {
                 throw new BassException("StreamCreateFile failed");
             }
@@ -35,82 +71,86 @@ namespace AudioSensei.Bass
             return handle;
         }
 
-        public static void FreeStream(uint handle)
+        public static void FreeStream(this BassHandle handle)
         {
-            if (!BASS_StreamFree(handle))
+            if (!handle.BASS_StreamFree())
             {
                 throw new BassException("StreamFree failed");
             }
         }
 
-        public static void PlayChannel(uint handle, bool restart = false)
+        public static void PlayChannel(this BassHandle handle, bool restart = false)
         {
-            if (!BASS_ChannelPlay(handle, restart))
+            if (!handle.BASS_ChannelPlay(restart))
             {
-                throw new BassException($"ChannelPlay failed");
+                throw new BassException("ChannelPlay failed");
             }
         }
 
-        public static void PauseChannel(uint handle)
+        public static void PauseChannel(this BassHandle handle)
         {
-            if (!BASS_ChannelPause(handle))
+            if (!handle.BASS_ChannelPause())
             {
-                throw new BassException($"ChannelPause failed");
+                throw new BassException("ChannelPause failed");
             }
         }
 
-        public static void StopChannel(uint handle)
+        public static void StopChannel(this BassHandle handle)
         {
-            if (!BASS_ChannelStop(handle))
+            if (!handle.BASS_ChannelStop())
             {
-                throw new BassException($"ChannelStop failed");
+                throw new BassException("ChannelStop failed");
             }
         }
 
-        public static float GetChannelAttribute(uint handle, ChannelAttribute attribute)
+        public static float GetChannelAttribute(this BassHandle handle, ChannelAttribute attribute)
         {
-            var value = 0.0f;
-
-            if (!BASS_ChannelGetAttribute(handle, (uint) attribute, ref value))
+            if (!handle.BASS_ChannelGetAttribute(attribute, out var value))
             {
-                throw new BassException($"ChannelGetAttribute failed");
+                throw new BassException("ChannelGetAttribute failed");
             }
 
             return value;
         }
 
-        public static void SetChannelAttribute(uint handle, ChannelAttribute attribute, float value)
+        public static void SetChannelAttribute(this BassHandle handle, ChannelAttribute attribute, float value)
         {
-            if (!BASS_ChannelSetAttribute(handle, (uint) attribute, value))
+            if (!handle.BASS_ChannelSetAttribute(attribute, value))
             {
-                throw new BassException($"ChannelSetAttribute failed");
+                throw new BassException("ChannelSetAttribute failed");
             }
         }
 
-        public static ulong GetChannelLength(uint handle, LengthMode mode)
+        public static ulong GetChannelLength(this BassHandle handle, LengthMode mode)
         {
-            return BASS_ChannelGetLength(handle, (uint) mode);
+            return handle.BASS_ChannelGetLength(mode);
         }
 
-        public static ulong GetChannelPosition(uint handle, LengthMode mode)
+        public static ulong GetChannelPosition(this BassHandle handle, LengthMode mode)
         {
-            return BASS_ChannelGetPosition(handle, (uint) mode);
+            return handle.BASS_ChannelGetPosition(mode);
         }
 
-        public static ChannelStatus GetChannelStatus(uint handle)
+        public static ChannelStatus GetChannelStatus(this BassHandle handle)
         {
-            return (ChannelStatus) BASS_ChannelIsActive(handle);
+            return handle.BASS_ChannelIsActive();
         }
 
-        public static double ConvertBytesToSeconds(uint handle, ulong position)
+        public static double ConvertBytesToSeconds(this BassHandle handle, ulong position)
         {
-            return BASS_ChannelBytes2Seconds(handle, position);
+            return handle.BASS_ChannelBytes2Seconds(position);
         }
 
         public static uint GetLastErrorCode()
         {
             return BASS_ErrorGetCode();
         }
+
+        [DllImport(Bass, EntryPoint = "BASS_PluginLoad")]
+        private static extern uint LoadPlugin([MarshalAs(UnmanagedType.LPWStr)] string file, uint flags);
+
+        [DllImport(Bass, EntryPoint = "BASS_PluginFree")]
+        private static extern bool UnloadPlugin(uint handle);
 
         [DllImport(Bass)]
         private static extern bool BASS_Init(int device, uint frequency, uint flags, IntPtr window, IntPtr clsid);
@@ -119,39 +159,39 @@ namespace AudioSensei.Bass
         private static extern bool BASS_Free();
 
         [DllImport(Bass)]
-        private static extern bool BASS_StreamFree(uint handle);
+        private static extern bool BASS_StreamFree(this BassHandle handle);
 
         [DllImport(Bass)]
-        private static extern bool BASS_ChannelPlay(uint handle, bool restart = false);
+        private static extern bool BASS_ChannelPlay(this BassHandle handle, bool restart = false);
 
         [DllImport(Bass)]
-        private static extern bool BASS_ChannelPause(uint handle);
+        private static extern bool BASS_ChannelPause(this BassHandle handle);
 
         [DllImport(Bass)]
-        private static extern bool BASS_ChannelStop(uint handle);
+        private static extern bool BASS_ChannelStop(this BassHandle handle);
 
         [DllImport(Bass)]
-        private static extern uint BASS_ChannelIsActive(uint handle);
+        private static extern ChannelStatus BASS_ChannelIsActive(this BassHandle handle);
 
         [DllImport(Bass)]
-        private static extern ulong BASS_ChannelGetLength(uint handle, uint mode);
+        private static extern ulong BASS_ChannelGetLength(this BassHandle handle, LengthMode mode);
 
         [DllImport(Bass)]
-        private static extern ulong BASS_ChannelGetPosition(uint handle, uint mode);
+        private static extern ulong BASS_ChannelGetPosition(this BassHandle handle, LengthMode mode);
 
         [DllImport(Bass)]
-        private static extern bool BASS_ChannelGetAttribute(uint handle, uint attribute, ref float value);
+        private static extern bool BASS_ChannelGetAttribute(this BassHandle handle, ChannelAttribute attribute, out float value);
 
         [DllImport(Bass)]
-        private static extern bool BASS_ChannelSetAttribute(uint handle, uint attribute, float value);
+        private static extern bool BASS_ChannelSetAttribute(this BassHandle handle, ChannelAttribute attribute, float value);
 
         [DllImport(Bass)]
-        private static extern double BASS_ChannelBytes2Seconds(uint handle, ulong position);
+        private static extern double BASS_ChannelBytes2Seconds(this BassHandle handle, ulong position);
 
         [DllImport(Bass)]
         private static extern uint BASS_ErrorGetCode();
 
         [DllImport(Bass)]
-        private static extern uint BASS_StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, uint flags);
+        private static extern BassHandle BASS_StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, StreamFlags flags);
     }
 }

@@ -8,7 +8,7 @@ namespace AudioSensei.Bass
 
         public BassException(string message) : this(message, BassNative.GetLastErrorCode()) { }
 
-        public BassException(string message, uint errorCode) : base(message)
+        public BassException(string message, uint errorCode) : base($"{message} (Error: {errorCode})")
         {
             ErrorCode = errorCode;
         }
