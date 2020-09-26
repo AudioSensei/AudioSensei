@@ -4,6 +4,7 @@ using Avalonia.Threading;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
@@ -37,6 +38,29 @@ namespace AudioSensei.ViewModels
             set => this.RaiseAndSetIfChanged(ref selectedPageIndex, value, "SelectedPageIndex");
         }
 
+
+        public bool IsPlaylistCreatorVisible
+        {
+            get => isPlaylistCreatorVisible;
+            set => this.RaiseAndSetIfChanged(ref isPlaylistCreatorVisible, value, "IsPlaylistCreatorVisible");
+        }
+
+        public string PlaylistName
+        {
+            get => playlistName;
+            set => this.RaiseAndSetIfChanged(ref playlistName, value, "PlaylistName");
+        }
+        public string PlaylistDescription
+        {
+            get => playlistDescription;
+            set => this.RaiseAndSetIfChanged(ref playlistDescription, value, "PlaylistDescription");
+        }
+        public string PlaylistAuthor
+        {
+            get => playlistAuthor;
+            set => this.RaiseAndSetIfChanged(ref playlistAuthor, value, "PlaylistAuthor");
+        }
+
         public string CurrentTime { get => $@"{TimeSpan.FromSeconds(GetCurrentTime()):hh\:mm\:ss}"; }
         public string TotalTime { get => $@"{TimeSpan.FromSeconds(GetTotalTime()):hh\:mm\:ss}"; }
         public int Total { get => (int)(GetCurrentTime() / GetTotalTime() * 100); }
@@ -54,6 +78,8 @@ namespace AudioSensei.ViewModels
         public ReactiveCommand<Unit, Unit> FavouriteTracksCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> RecentlyPlayedTracksCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> AddPlaylistCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> CreatePlaylistCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> CancelPlaylistCreationCommand { get; private set; }
 
 		private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000.0) };
 		private readonly Random random = new Random();
@@ -64,6 +90,12 @@ namespace AudioSensei.ViewModels
 
         private int selectedPageIndex = 0;
         private int selectedIndex = -1;
+
+        private bool isPlaylistCreatorVisible = false;
+
+        private string playlistName = "";
+        private string playlistAuthor = "";
+        private string playlistDescription = "";
 
         private bool repeat = false;
         private bool shuffle = false;
@@ -96,7 +128,9 @@ namespace AudioSensei.ViewModels
             AllTracksCommand = ReactiveCommand.Create(() => { SelectedPageIndex = 0; });
             FavouriteTracksCommand = ReactiveCommand.Create(() => { SelectedPageIndex = 1; });
             RecentlyPlayedTracksCommand = ReactiveCommand.Create(() => { SelectedPageIndex = 2; });
-            AddPlaylistCommand = ReactiveCommand.Create(() => { });
+            AddPlaylistCommand = ReactiveCommand.Create(() => { IsPlaylistCreatorVisible = true; });
+            CreatePlaylistCommand = ReactiveCommand.Create(CreatePlaylist);
+            CancelPlaylistCreationCommand = ReactiveCommand.Create(CancelPlaylistCreation);
         }
 
         private void LoadPlaylists()
@@ -250,6 +284,24 @@ namespace AudioSensei.ViewModels
                 repeat = true;
                 shuffle = false;
             }
+        }
+
+        private void CreatePlaylist()
+        {
+            if (!string.IsNullOrWhiteSpace(playlistName))
+            {
+                Playlists.Add(new Playlist(playlistName, playlistAuthor, playlistDescription, new List<Track>()));
+            }
+
+            CancelPlaylistCreation();
+        }
+
+        private void CancelPlaylistCreation()
+        {
+            IsPlaylistCreatorVisible = false;
+            PlaylistName = "";
+            PlaylistAuthor = "";
+            PlaylistDescription = "";
         }
 
         private void Timer_Tick(object sender, EventArgs e)
