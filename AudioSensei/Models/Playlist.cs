@@ -26,7 +26,7 @@ namespace AudioSensei.Models
 
         public bool Equals(Playlist other)
         {
-            return tracks.SequenceEqual(other.tracks) && Name == other.Name && Author == other.Author && Description == other.Description;
+            return Name == other.Name && Author == other.Author && Description == other.Description && tracks.SequenceEqual(other.tracks);
         }
 
         public override bool Equals(object obj)
@@ -36,7 +36,7 @@ namespace AudioSensei.Models
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(tracks, Name, Author, Description);
+            return HashCode.Combine(Name, Author, Description, tracks);
         }
 
         public static bool operator ==(Playlist left, Playlist right)
