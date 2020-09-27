@@ -1,6 +1,6 @@
 ﻿using System;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace AudioSensei.Models
 {
@@ -25,7 +25,7 @@ namespace AudioSensei.Models
 
         public bool Equals(Playlist other)
         {
-            return Equals(tracks, other.tracks) && Name == other.Name && Author == other.Author && Description == other.Description;
+            return Name == other.Name && Author == other.Author && Description == other.Description;
         }
 
         public override bool Equals(object obj)
