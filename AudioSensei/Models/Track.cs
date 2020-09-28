@@ -1,23 +1,50 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.ComponentModel;
 
 namespace AudioSensei.Models
 {
-    public struct Track : IEquatable<Track>
+    public struct Track : IEquatable<Track>, INotifyPropertyChanged
     {
         [JsonIgnore]
-        public string Name { get; set; }
-        public string Author { get; set; }
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
+            }
+        }
+        public string Author
+        {
+            get => _author;
+            set
+            {
+                _author = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Author"));
+            }
+        }
         public Source Source { get; }
         public string Url { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private string _name;
+        private string _author;
 
         [JsonConstructor]
         public Track(string author, Source source, string url)
         {
-            Name = "";
-            Author = author;
+            _name = null;
+            _author = null;
+
             Source = source;
             Url = url;
+            PropertyChanged = null;
+
+            Name = "";
+            Author = author;
         }
 
         public bool Equals(Track other)

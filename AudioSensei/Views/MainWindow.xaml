@@ -3,6 +3,8 @@
         xmlns:vm="clr-namespace:AudioSensei.ViewModels;assembly=AudioSensei"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+		xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
         x:Class="AudioSensei.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -41,10 +43,15 @@
 
                 <TextBlock TextAlignment="Left" Margin="10,5,0,0">PLAYLISTS</TextBlock>
 
-                <ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}">
+                <ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}" DataContext="{Binding}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                      <Button Height="30" Width="150" Margin="10,10,10,0">
+                      <Button x:Name="SelectPlaylistButton" Height="30" Width="150" Margin="10,10,10,0">
+                        <i:Interaction.Behaviors>
+                          <ia:EventTriggerBehavior EventName="Click" SourceObject="{Binding #SelectPlaylistButton}">
+                            <ia:InvokeCommandAction Command="{Binding $parent[ItemsControl].DataContext.SelectPlaylistCommand}" CommandParameter="{Binding UniqueId}"/>    
+                          </ia:EventTriggerBehavior>
+                        </i:Interaction.Behaviors>
                         <TextBlock Text="{Binding Name}"/>
                       </Button>
                     </DataTemplate>
@@ -65,7 +72,7 @@
       <Grid Grid.Row="0" Grid.Column="1">
         <TabControl SelectedIndex="{Binding SelectedPageIndex}">
           <TabItem>
-            <DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Items="{Binding Tracks}" >
+            <DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedTrackIndex, Mode=TwoWay}" Items="{Binding CurrentlyVisiblePlaylist.Tracks}" >
               <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Author" Binding="{Binding Author}" />
