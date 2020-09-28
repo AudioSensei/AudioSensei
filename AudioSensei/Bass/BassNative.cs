@@ -24,10 +24,9 @@ namespace AudioSensei.Bass
                 else
                     throw new PlatformNotSupportedException();
 
-                const uint unicode = 0x80000000;
                 foreach (var file in Directory.EnumerateFiles("BassPlugins", filter))
                 {
-                    if (LoadPlugin(file, unicode) == 0)
+                    if (LoadPlugin(file, 0) == 0)
                         throw new BassException($"Loading {file} as plugin failed");
                 }
 
@@ -146,8 +145,26 @@ namespace AudioSensei.Bass
             return BASS_ErrorGetCode();
         }
 
+        private static BassHandle BASS_StreamCreateFile(bool memory, string file, ulong offset, ulong length, StreamFlags flags)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? BASS_StreamCreateFileWindows(memory, file, offset, length, flags | StreamFlags.Unicode)
+                : BASS_StreamCreateFileUnix(memory, file, offset, length, flags);
+        }
+
+        private static uint LoadPlugin(string file, uint flags)
+        {
+            const uint unicode = 0x80000000;
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? LoadPluginWindows(file, flags | unicode)
+                : LoadPluginUnix(file, flags);
+        }
+
         [DllImport(Bass, EntryPoint = "BASS_PluginLoad")]
-        private static extern uint LoadPlugin([MarshalAs(UnmanagedType.LPWStr)] string file, uint flags);
+        private static extern uint LoadPluginWindows([MarshalAs(UnmanagedType.LPWStr)] string file, uint flags);
+
+        [DllImport(Bass, EntryPoint = "BASS_PluginLoad")]
+        private static extern uint LoadPluginUnix([MarshalAs(UnmanagedType.LPUTF8Str)] string file, uint flags);
 
         [DllImport(Bass, EntryPoint = "BASS_PluginFree")]
         private static extern bool UnloadPlugin(uint handle);
@@ -191,7 +208,10 @@ namespace AudioSensei.Bass
         [DllImport(Bass)]
         private static extern uint BASS_ErrorGetCode();
 
-        [DllImport(Bass)]
-        private static extern BassHandle BASS_StreamCreateFile(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, StreamFlags flags);
+        [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
+        private static extern BassHandle BASS_StreamCreateFileWindows(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, StreamFlags flags);
+
+        [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
+        private static extern BassHandle BASS_StreamCreateFileUnix(bool memory, [MarshalAs(UnmanagedType.LPUTF8Str)] string file, ulong offset, ulong length, StreamFlags flags);
     }
 }
