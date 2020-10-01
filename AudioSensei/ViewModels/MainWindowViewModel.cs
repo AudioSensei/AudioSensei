@@ -13,6 +13,24 @@ namespace AudioSensei.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        // REDESIGN
+        private bool isSidebarVisible = true;
+        public bool IsSidebarVisible
+        {
+            get => isSidebarVisible;
+            set {
+                this.RaiseAndSetIfChanged(ref isSidebarVisible, value, nameof(IsSidebarVisible));
+                SidebarWidth = value ? 200 : 0;
+            }
+        }
+        private int sidebarWidth = 200;
+        public int SidebarWidth
+        {
+            get => sidebarWidth;
+            set => this.RaiseAndSetIfChanged(ref sidebarWidth, value, nameof(SidebarWidth));
+        }
+        public ReactiveCommand<Unit, Unit> ToggleSidebarCommand { get; private set; }
+
         // Player
         public float Volume
         {
@@ -147,6 +165,9 @@ namespace AudioSensei.ViewModels
 
         private void InitializeCommands()
         {
+            // Redesign v
+            ToggleSidebarCommand = ReactiveCommand.Create(() => { IsSidebarVisible = !IsSidebarVisible; });
+            // Redesign ^
             PlayOrPauseCommand = ReactiveCommand.Create(PlayOrPause);
             StopCommand = ReactiveCommand.Create(StopInternal);
             NextCommand = ReactiveCommand.Create(() => Next(repeat, shuffle));

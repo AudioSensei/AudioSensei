@@ -38,4 +38,7 @@
   <ItemGroup>
     <None Include="$(SolutionDir)AudioSensei\BassPlugins\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\plus.png" />
+  </ItemGroup>
 </Project>
