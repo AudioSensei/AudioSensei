@@ -1,5 +1,4 @@
-﻿using AudioSensei.Bass;
-using AudioSensei.Models;
+﻿using AudioSensei.Models;
 using Avalonia.Threading;
 using Newtonsoft.Json;
 using ReactiveUI;
@@ -13,50 +12,35 @@ namespace AudioSensei.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        // Player
-        public float Volume
-        {
-            get => IsInitialized() ? handle.GetChannelAttribute(ChannelAttribute.VolumeLevel) * 100f : 100f;
-            set
-            {
-                if (IsInitialized())
-                {
-                    handle.SetChannelAttribute(ChannelAttribute.VolumeLevel, value / 100f);
-                    this.RaisePropertyChanged("Volume");
-                }
-            }
-        }
-        public string CurrentTime { get => $@"{TimeSpan.FromSeconds(GetCurrentTime()):hh\:mm\:ss}"; }
-        public string TotalTime { get => $@"{TimeSpan.FromSeconds(GetTotalTime()):hh\:mm\:ss}"; }
-        public int Total { get => (int)(GetCurrentTime() / GetTotalTime() * 100); }
-
+        public IAudioBackend AudioBackend { get; }
+    
         // Pages
         public int SelectedPageIndex
         {
             get => selectedPageIndex;
-            set => this.RaiseAndSetIfChanged(ref selectedPageIndex, value, "SelectedPageIndex");
+            set => this.RaiseAndSetIfChanged(ref selectedPageIndex, value, nameof(SelectedPageIndex));
         }
 
         // Playlist creator
         public bool IsPlaylistCreatorVisible
         {
             get => isPlaylistCreatorVisible;
-            set => this.RaiseAndSetIfChanged(ref isPlaylistCreatorVisible, value, "IsPlaylistCreatorVisible");
+            set => this.RaiseAndSetIfChanged(ref isPlaylistCreatorVisible, value, nameof(IsPlaylistCreatorVisible));
         }
         public string PlaylistName
         {
             get => playlistName;
-            set => this.RaiseAndSetIfChanged(ref playlistName, value, "PlaylistName");
+            set => this.RaiseAndSetIfChanged(ref playlistName, value, nameof(PlaylistName));
         }
         public string PlaylistDescription
         {
             get => playlistDescription;
-            set => this.RaiseAndSetIfChanged(ref playlistDescription, value, "PlaylistDescription");
+            set => this.RaiseAndSetIfChanged(ref playlistDescription, value, nameof(PlaylistDescription));
         }
         public string PlaylistAuthor
         {
             get => playlistAuthor;
-            set => this.RaiseAndSetIfChanged(ref playlistAuthor, value, "PlaylistAuthor");
+            set => this.RaiseAndSetIfChanged(ref playlistAuthor, value, nameof(PlaylistAuthor));
         }
 
         // Playlists
@@ -64,14 +48,14 @@ namespace AudioSensei.ViewModels
         public Playlist? CurrentlyPlayedPlaylist
         {
             get => currentlyPlayedPlaylist;
-            set => this.RaiseAndSetIfChanged(ref currentlyPlayedPlaylist, value, "CurrentlyPlayedPlaylist");
+            set => this.RaiseAndSetIfChanged(ref currentlyPlayedPlaylist, value, nameof(CurrentlyPlayedPlaylist));
         }
         public Playlist CurrentlyVisiblePlaylist
         {
             get => currentlyVisiblePlaylist;
             set
             {
-                this.RaiseAndSetIfChanged(ref currentlyVisiblePlaylist, value, "CurrentlyVisiblePlaylist");
+                this.RaiseAndSetIfChanged(ref currentlyVisiblePlaylist, value, nameof(CurrentlyVisiblePlaylist));
 
                 if (currentlyPlayedPlaylist == currentlyVisiblePlaylist)
                 {
@@ -84,7 +68,7 @@ namespace AudioSensei.ViewModels
         public int SelectedTrackIndex
         {
             get => selectedTrackIndex;
-            set => this.RaiseAndSetIfChanged(ref selectedTrackIndex, value, "SelectedTrackIndex");
+            set => this.RaiseAndSetIfChanged(ref selectedTrackIndex, value, nameof(SelectedTrackIndex));
         }
         public int CurrentTrackIndex { get; set; } = -1;
 
@@ -103,52 +87,47 @@ namespace AudioSensei.ViewModels
         public ReactiveCommand<Unit, Unit> CancelPlaylistCreationCommand { get; private set; }
         public ReactiveCommand<Guid, Unit> SelectPlaylistCommand { get; private set; }
 
-        private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000.0) };
+        private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
         private readonly Random random = new Random();
 
-        // Player
-        private BassHandle handle = BassHandle.Null;
-
-        private bool repeat = false;
-        private bool shuffle = false;
+        private bool repeat;
+        private bool shuffle;
 
         // Pages
-        private int selectedPageIndex = 0;
+        private int selectedPageIndex;
 
         // Playlist creator
-        private bool isPlaylistCreatorVisible = false;
+        private bool isPlaylistCreatorVisible;
         private string playlistName = "";
         private string playlistAuthor = "";
         private string playlistDescription = "";
 
         // Playlists
         private Playlist currentlyVisiblePlaylist = new Playlist("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
-        private Playlist? currentlyPlayedPlaylist = null;
+        private Playlist? currentlyPlayedPlaylist;
 
         // Tracks
         private int selectedTrackIndex = -1;
     
-        public MainWindowViewModel()
+        public MainWindowViewModel(IAudioBackend audioBackend)
         {
-            BassNative.Initialize();
+            this.AudioBackend = audioBackend;
 
             InitializeCommands();
             LoadPlaylists();
 
-            timer.Tick += Timer_Tick;
-            timer.Start();
+            timer.Tick += Tick;
         }
 
         ~MainWindowViewModel()
         {
-            StopInternal();
-            BassNative.Free();
+            AudioBackend.Dispose();
         }
 
         private void InitializeCommands()
         {
             PlayOrPauseCommand = ReactiveCommand.Create(PlayOrPause);
-            StopCommand = ReactiveCommand.Create(StopInternal);
+            StopCommand = ReactiveCommand.Create(Stop);
             NextCommand = ReactiveCommand.Create(() => Next(repeat, shuffle));
             PreviousCommand = ReactiveCommand.Create(() => Previous(repeat, shuffle));
             RepeatCommand = ReactiveCommand.Create(Repeat);
@@ -207,14 +186,17 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-            if (IsPlaying() && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
+            if (AudioBackend.IsPlaying && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
-                PauseInternal();
+                AudioBackend.Pause();
+                timer.Stop();
                 return;
             }
-            else if (IsPaused() && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
+
+            if (AudioBackend.IsPaused && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
-                ResumeInternal();
+                AudioBackend.Resume();
+                timer.Start();
                 return;
             }
 
@@ -234,6 +216,13 @@ namespace AudioSensei.ViewModels
             }
 
             Play(currentlyPlayedPlaylist?.Tracks[CurrentTrackIndex]);
+            timer.Start();
+        }
+
+        private void Stop()
+        {
+            AudioBackend.Stop();
+            timer.Stop();
         }
 
         private void Previous(bool repeat = true, bool shuffle = false)
@@ -349,102 +338,33 @@ namespace AudioSensei.ViewModels
             CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (IsInitialized())
-            {
-                var totalTime = handle.ConvertBytesToSeconds(handle.GetChannelLength(LengthMode.Bytes));
-                var currentTime = handle.ConvertBytesToSeconds(handle.GetChannelPosition(LengthMode.Bytes));
-
-                if (totalTime - currentTime < 0.5)
-                {
-                    Next();
-                }
-
-                this.RaisePropertyChanged("CurrentTime");
-                this.RaisePropertyChanged("TotalTime");
-                this.RaisePropertyChanged("Total");
-            }
-        }
-
         private void Play(Track? track)
         {
             if (track == null) 
                 throw new ArgumentNullException(nameof(track));
 
-            var previousVolume = Volume;
+            var previousVolume = AudioBackend.Volume;
 
             switch (track?.Source)
             {
                 case Source.File:
-                    PlayInternal(track?.Url);
+                    AudioBackend.Play(track?.Url);
                     break;
             }
 
-            Volume = previousVolume;
+            AudioBackend.Volume = previousVolume;
         }
-
-        private bool IsInitialized()
+        
+        private void Tick(object sender, EventArgs args)
         {
-            return handle != BassHandle.Null;
-        }
-
-        private bool IsPlaying()
-        {
-            return IsInitialized() && handle.GetChannelStatus() == ChannelStatus.Playing;
-        }
-
-        private bool IsPaused()
-        {
-            return IsInitialized() && handle.GetChannelStatus() == ChannelStatus.Paused;
-        }
-
-        private double GetCurrentTime()
-        {
-            return IsInitialized() ? handle.ConvertBytesToSeconds(handle.GetChannelPosition(LengthMode.Bytes)) : 0.0;
-        }
-
-        private double GetTotalTime()
-        {
-            return IsInitialized() ? handle.ConvertBytesToSeconds(handle.GetChannelLength(LengthMode.Bytes)) : 0.0;
-        }
-
-        private void PlayInternal(string filePath)
-        {
-            if (File.Exists(filePath))
+            if (!AudioBackend.IsInitialized)
             {
-                if (IsInitialized())
-                {
-                    handle.StopChannel();
-                }
-
-                handle = BassNative.CreateStreamFromFile(filePath);
-                handle.PlayChannel();
+                return;
             }
-        }
 
-        private void ResumeInternal()
-        {
-            if (IsInitialized())
+            if (AudioBackend.TotalTime - AudioBackend.CurrentTime < TimeSpan.FromSeconds(0.5))
             {
-                handle.PlayChannel();
-            }
-        }
-
-        private void PauseInternal()
-        {
-            if (IsInitialized())
-            {
-                handle.PauseChannel();
-            }
-        }
-
-        private void StopInternal()
-        {
-            if (IsInitialized())
-            {
-                handle.StopChannel();
-                handle.FreeStream();
+                Next();
             }
         }
     }

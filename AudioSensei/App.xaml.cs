@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using AudioSensei.Bass;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AudioSensei.ViewModels;
@@ -19,7 +20,7 @@ namespace AudioSensei
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = new MainWindowViewModel(new BassAudioBackend()),
                 };
             }
 
