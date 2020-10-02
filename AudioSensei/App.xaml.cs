@@ -23,12 +23,8 @@ namespace AudioSensei
 
             var logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
-                .WriteTo.File(latestLogPath,
-                    outputTemplate: template)
-                .WriteTo.File(@"logs\log-.log",
-                    outputTemplate: template,
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 9)
+                .WriteTo.File(latestLogPath, outputTemplate: template)
+                .WriteTo.File(@"logs\log-.log", outputTemplate: template, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 9)
                 .CreateLogger();
 
             SerilogLogger.Initialize(logger);
