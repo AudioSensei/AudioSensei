@@ -83,7 +83,7 @@
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).so" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
   </ItemGroup>
-  
+
   <Target Name="CopyReferenceFilesBuild" BeforeTargets="Build">
     <ItemGroup>
       <ReferenceFiles Include="%(Reference.RelativeDir)%(Reference.Filename).pdb" />
@@ -99,4 +99,10 @@
     <Message Text="Copying reference files to $(PublishDir)" Importance="High" />
     <Copy SourceFiles="@(ReferenceFiles)" DestinationFolder="$(PublishDir)" Condition="Exists('%(RootDir)%(Directory)%(Filename)%(Extension)')" />
   </Target>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>$(AssemblyName).Tests</_Parameter1>    
+    </AssemblyAttribute>  
+  </ItemGroup>
 </Project>
