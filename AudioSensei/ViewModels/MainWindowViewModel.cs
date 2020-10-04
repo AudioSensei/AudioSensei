@@ -114,7 +114,6 @@ namespace AudioSensei.ViewModels
         {
             this.AudioBackend = audioBackend;
             YoutubePlayer = new YoutubePlayer(audioBackend);
-            YoutubePlayer.Play("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
             InitializeCommands();
             LoadPlaylists();
