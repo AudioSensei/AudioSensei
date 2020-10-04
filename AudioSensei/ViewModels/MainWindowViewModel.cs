@@ -13,7 +13,8 @@ namespace AudioSensei.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         public IAudioBackend AudioBackend { get; }
-    
+        public YoutubePlayer YoutubePlayer { get; }
+
         // Pages
         public int SelectedPageIndex
         {
@@ -112,6 +113,7 @@ namespace AudioSensei.ViewModels
         public MainWindowViewModel(IAudioBackend audioBackend)
         {
             this.AudioBackend = audioBackend;
+            YoutubePlayer = new YoutubePlayer(audioBackend);
 
             InitializeCommands();
             LoadPlaylists();
@@ -348,7 +350,11 @@ namespace AudioSensei.ViewModels
             switch (track?.Source)
             {
                 case Source.File:
-                    AudioBackend.Play(track?.Url);
+                    AudioBackend.PlayFile(track?.Url);
+                    break;
+                case Source.YouTube:
+                    // TODO: await this
+                    YoutubePlayer.Play(track?.Url);
                     break;
             }
 

@@ -5,14 +5,22 @@ namespace AudioSensei.Bass
     [Flags]
     internal enum StreamFlags : uint
     {
+        None = 0,
+
         SampleFloat = 0x100,
         SampleMono = 0x2,
         SampleSoftware = 0x10,
         Sample3D = 0x8,
         SampleLoop = 0x4,
         SampleFx = 0x80,
+
         StreamPrescan = 0x20000,
-        StreamAutofree = 0x40000,
+
+        StreamRestrate = 0x80000,
+        StreamBlock = 0x100000,
+        StreamStatus = 0x800000,
+
+        StreamAutoFree = 0x40000,
         StreamDecode = 0x200000,
 
         SpeakerFront = 0x1000000,

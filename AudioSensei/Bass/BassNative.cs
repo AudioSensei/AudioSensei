@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using YoutubeExplode;
 
 namespace AudioSensei.Bass
 {
@@ -9,6 +10,15 @@ namespace AudioSensei.Bass
         private const string Bass = "bass";
 
         private static readonly object LoadLock = new object();
+        private static StreamFlags floatFlag = StreamFlags.None;
+
+        static BassNative()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                BASS_SetConfig(BassConfig.Unicode, 1);
+            }
+        }
 
         public static void Initialize(int device = -1, uint frequency = 44000)
         {
@@ -40,6 +50,24 @@ namespace AudioSensei.Bass
                 {
                     throw new BassException("Init failed");
                 }
+
+                if (BASS_GetConfig(BassConfig.Float) == 0)
+                    floatFlag = StreamFlags.None;
+                else
+                {
+                    BassHandle floatable = BASS_StreamCreate(44100, 1, StreamFlags.SampleFloat, IntPtr.Zero, IntPtr.Zero); // try creating a floating-point stream
+                    if (floatable != BassHandle.Null)
+                    {
+                        BASS_StreamFree(floatable); // floating-point channels are supported (free the test stream)
+                        floatFlag = StreamFlags.SampleFloat;
+                    }
+                    else
+                    {
+                        floatFlag = StreamFlags.None;
+                    }
+                }
+
+                BASS_SetConfigPtr(BassConfig.NetAgent, WebHelper.UserAgent);
             }
         }
 
@@ -60,11 +88,23 @@ namespace AudioSensei.Bass
 
         public static BassHandle CreateStreamFromFile(string filePath)
         {
-            var handle = BASS_StreamCreateFile(false, filePath, 0, 0, StreamFlags.AsyncFile | StreamFlags.Unicode | StreamFlags.StreamPrescan | StreamFlags.StreamAutofree);
+            var handle = BASS_StreamCreateFile(false, filePath, 0, 0, floatFlag | StreamFlags.AsyncFile | StreamFlags.StreamPrescan | StreamFlags.StreamAutoFree);
 
             if (handle == BassHandle.Null)
             {
                 throw new BassException("StreamCreateFile failed");
+            }
+
+            return handle;
+        }
+
+        public static BassHandle CreateStreamFromUrl(string url)
+        {
+            var handle = BASS_StreamCreateURL(url, 0, floatFlag | StreamFlags.StreamAutoFree | StreamFlags.StreamBlock | StreamFlags.StreamRestrate, null, IntPtr.Zero);
+
+            if (handle == BassHandle.Null)
+            {
+                throw new BassException("StreamCreateUrl failed");
             }
 
             return handle;
@@ -152,6 +192,13 @@ namespace AudioSensei.Bass
                 : BASS_StreamCreateFileUnix(memory, file, offset, length, flags);
         }
 
+        private static BassHandle BASS_StreamCreateURL(string url, uint offset, StreamFlags flags, DownloadProc proc, IntPtr user)
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? BASS_StreamCreateURLWindows(url, offset, flags | StreamFlags.Unicode, proc, user)
+                : BASS_StreamCreateURLUnix(url, offset, flags, proc, user);
+        }
+
         private static uint LoadPlugin(string file, uint flags)
         {
             const uint unicode = 0x80000000;
@@ -208,10 +255,37 @@ namespace AudioSensei.Bass
         [DllImport(Bass)]
         private static extern uint BASS_ErrorGetCode();
 
+        [DllImport(Bass)]
+        private static extern uint BASS_GetConfig(BassConfig option);
+
+        [DllImport(Bass)]
+        private static extern IntPtr BASS_GetConfigPtr(BassConfig option);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_SetConfig(BassConfig option, uint value);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_SetConfigPtr(BassConfig option, IntPtr value);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_SetConfigPtr(BassConfig option, [MarshalAs(UnmanagedType.LPUTF8Str)] string value);
+
         [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
         private static extern BassHandle BASS_StreamCreateFileWindows(bool memory, [MarshalAs(UnmanagedType.LPWStr)] string file, ulong offset, ulong length, StreamFlags flags);
 
         [DllImport(Bass, EntryPoint = "BASS_StreamCreateFile")]
         private static extern BassHandle BASS_StreamCreateFileUnix(bool memory, [MarshalAs(UnmanagedType.LPUTF8Str)] string file, ulong offset, ulong length, StreamFlags flags);
+
+        [UnmanagedFunctionPointer(CallingConvention.Winapi)]
+        public delegate void DownloadProc(IntPtr buffer, uint length, IntPtr user);
+
+        [DllImport(Bass, EntryPoint = "BASS_StreamCreateURL")]
+        private static extern BassHandle BASS_StreamCreateURLWindows([MarshalAs(UnmanagedType.LPWStr)] string url, uint offset, StreamFlags flags, DownloadProc proc, IntPtr user);
+
+        [DllImport(Bass, EntryPoint = "BASS_StreamCreateURL")]
+        private static extern BassHandle BASS_StreamCreateURLUnix([MarshalAs(UnmanagedType.LPUTF8Str)] string url, uint offset, StreamFlags flags, DownloadProc proc, IntPtr user);
+
+        [DllImport(Bass)]
+        private static extern BassHandle BASS_StreamCreate(uint freq, uint chans, StreamFlags flags, IntPtr proc, IntPtr user);
     }
 }
