@@ -16,8 +16,9 @@ namespace AudioSensei
         bool IsInitialized { get; }
         bool IsPlaying { get; }
         bool IsPaused { get; }
-    
-        void Play(string filePath); 
+
+        void PlayFile(string filePath);
+        void PlayUrl(string url);
         void Resume();
         void Pause();
         void Stop();

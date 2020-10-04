@@ -72,7 +72,7 @@ namespace AudioSensei.Bass
             BassNative.Free();
         }
 
-        public void Play(string filePath)
+        public void PlayFile(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -85,6 +85,18 @@ namespace AudioSensei.Bass
             }
             
             handle = BassNative.CreateStreamFromFile(filePath);
+            handle.PlayChannel();
+            timer.Start();
+        }
+
+        public void PlayUrl(string url)
+        {
+            if (IsInitialized)
+            {
+                handle.StopChannel();
+            }
+
+            handle = BassNative.CreateStreamFromUrl(url);
             handle.PlayChannel();
             timer.Start();
         }

@@ -2,6 +2,7 @@
 {
     public enum Source
     {
-        File
+        File,
+        YouTube
     }
 }
