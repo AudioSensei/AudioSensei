@@ -124,7 +124,6 @@ namespace AudioSensei.Bass
             if (IsInitialized)
             {
                 handle.StopChannel();
-                handle.FreeStream();
                 timer.Stop();
             }
         }
