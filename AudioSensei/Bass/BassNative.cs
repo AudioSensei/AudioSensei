@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using YoutubeExplode;
 
 namespace AudioSensei.Bass
 {
@@ -26,15 +25,15 @@ namespace AudioSensei.Bass
             {
                 string filter;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    filter = "bass*.dll";
+                    filter = "*.dll";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    filter = "libbass*.so";
+                    filter = "*.so";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    filter = "libbass*.dylib";
+                    filter = "*.dylib";
                 else
                     throw new PlatformNotSupportedException();
 
-                foreach (var file in Directory.EnumerateFiles("BassPlugins", filter))
+                foreach (var file in Directory.EnumerateFiles("BassPlugins", filter, SearchOption.AllDirectories))
                 {
                     if (LoadPlugin(file, 0) == 0)
                         throw new BassException($"Loading {file} as plugin failed");
