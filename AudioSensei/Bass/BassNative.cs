@@ -151,6 +151,26 @@ namespace AudioSensei.Bass
             return value;
         }
 
+        // ReSharper disable once InconsistentNaming
+        public static unsafe bool TryGetChannelID3v1Tags(this BassHandle handle, out ID3v1 tags)
+        {
+            var t = handle.BASS_ChannelGetTagsID3v1();
+            if (t == null)
+            {
+                var e = GetLastErrorCode();
+                if (e == BassError.NotAvailable)
+                {
+                    tags = default;
+                    return false;
+                }
+
+                throw new BassException("TryGetChannelID3v1Tags failed", e);
+            }
+
+            tags = BassID3v1.ToID3v1(*t);
+            return true;
+        }
+
         public static void SetChannelAttribute(this BassHandle handle, ChannelAttribute attribute, float value)
         {
             if (!handle.BASS_ChannelSetAttribute(attribute, value))
@@ -179,7 +199,7 @@ namespace AudioSensei.Bass
             return handle.BASS_ChannelBytes2Seconds(position);
         }
 
-        public static uint GetLastErrorCode()
+        public static BassError GetLastErrorCode()
         {
             return BASS_ErrorGetCode();
         }
@@ -252,7 +272,7 @@ namespace AudioSensei.Bass
         private static extern double BASS_ChannelBytes2Seconds(this BassHandle handle, ulong position);
 
         [DllImport(Bass)]
-        private static extern uint BASS_ErrorGetCode();
+        private static extern BassError BASS_ErrorGetCode();
 
         [DllImport(Bass)]
         private static extern uint BASS_GetConfig(BassConfig option);
@@ -286,5 +306,12 @@ namespace AudioSensei.Bass
 
         [DllImport(Bass)]
         private static extern BassHandle BASS_StreamCreate(uint freq, uint chans, StreamFlags flags, IntPtr proc, IntPtr user);
+
+        [DllImport(Bass, EntryPoint = "BASS_ChannelGetTags")]
+        private static extern unsafe BassID3v1* BASS_ChannelGetTagsID3v1(this BassHandle handle, BassTag tags = BassTag.Id3);
+
+        [DllImport(Bass, EntryPoint = "BASS_ChannelGetTags")]
+        [return: MarshalAs(UnmanagedType.LPUTF8Str)]
+        private static extern string BASS_ChannelGetTags(this BassHandle handle, BassTag tags);
     }
 }
