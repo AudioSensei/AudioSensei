@@ -4,15 +4,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <LangVersion>8</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentation>true</GenerateDocumentation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
