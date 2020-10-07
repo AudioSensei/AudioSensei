@@ -151,7 +151,40 @@ namespace AudioSensei.ViewModels
                 {
                     if (file.EndsWith(".json"))
                     {
-                        Playlists.Add(JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file)));
+                        var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
+
+                        for (int i = 0; i < playlist.Tracks.Count; i++)
+                        {
+                            var track = playlist.Tracks[i];
+                            
+                            switch (track.Source)
+                            {
+                                case Source.File:
+                                    TagLib.File tagFile;
+                                    
+                                    try
+                                    {
+                                        tagFile = TagLib.File.Create(track.Url);
+                                        track.Name = string.IsNullOrEmpty(tagFile.Tag.Title)
+                                            ? Path.GetFileNameWithoutExtension(track.Url)
+                                            : tagFile.Tag.Title;
+                                        track.Author = string.IsNullOrEmpty(tagFile.Tag.JoinedPerformers) 
+                                            ? "Unknown" 
+                                            : tagFile.Tag.JoinedArtists;
+                                    }
+                                    catch (Exception exception)
+                                    {
+                                        track.Name = Path.GetFileNameWithoutExtension(track.Url);
+                                        track.Author = "Umknown";
+                                    }
+
+                                    break;
+                            }
+                            
+                            playlist.Tracks[i] = track;
+                        }
+                    
+                        Playlists.Add(playlist);
                     }
                 }
 

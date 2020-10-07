@@ -16,6 +16,7 @@ namespace AudioSensei.Models
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
             }
         }
+        [JsonIgnore]
         public string Author
         {
             get => _author;
