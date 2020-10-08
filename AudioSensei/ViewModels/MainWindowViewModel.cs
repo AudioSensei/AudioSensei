@@ -145,53 +145,57 @@ namespace AudioSensei.ViewModels
 
         private void LoadPlaylists()
         {
-            if (Directory.Exists("Playlists"))
+            if (!Directory.Exists("Playlists"))
             {
-                foreach (var file in Directory.GetFiles("Playlists"))
+                Directory.CreateDirectory("Playlists");
+            }
+
+            foreach (var file in Directory.GetFiles("Playlists"))
+            {
+                if (!file.EndsWith(".json"))
                 {
-                    if (file.EndsWith(".json"))
+                    continue;
+                }
+
+                var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
+
+                for (int i = 0; i < playlist.Tracks.Count; i++)
+                {
+                    var track = playlist.Tracks[i];
+
+                    switch (track.Source)
                     {
-                        var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
+                        case Source.File:
+                            TagLib.File tagFile;
 
-                        for (int i = 0; i < playlist.Tracks.Count; i++)
-                        {
-                            var track = playlist.Tracks[i];
-                            
-                            switch (track.Source)
+                            try
                             {
-                                case Source.File:
-                                    TagLib.File tagFile;
-                                    
-                                    try
-                                    {
-                                        tagFile = TagLib.File.Create(track.Url);
-                                        track.Name = string.IsNullOrEmpty(tagFile.Tag.Title)
-                                            ? Path.GetFileNameWithoutExtension(track.Url)
-                                            : tagFile.Tag.Title;
-                                        track.Author = string.IsNullOrEmpty(tagFile.Tag.JoinedPerformers) 
-                                            ? "Unknown" 
-                                            : tagFile.Tag.JoinedArtists;
-                                    }
-                                    catch (Exception exception)
-                                    {
-                                        track.Name = Path.GetFileNameWithoutExtension(track.Url);
-                                        track.Author = "Umknown";
-                                    }
-
-                                    break;
+                                tagFile = TagLib.File.Create(track.Url);
+                                track.Name = string.IsNullOrEmpty(tagFile.Tag.Title)
+                                    ? Path.GetFileNameWithoutExtension(track.Url)
+                                    : tagFile.Tag.Title;
+                                track.Author = string.IsNullOrEmpty(tagFile.Tag.JoinedPerformers)
+                                    ? "Unknown"
+                                    : tagFile.Tag.JoinedPerformers;
                             }
-                            
-                            playlist.Tracks[i] = track;
-                        }
-                    
-                        Playlists.Add(playlist);
+                            catch (Exception)
+                            {
+                                track.Name = Path.GetFileNameWithoutExtension(track.Url);
+                                track.Author = "Unknown";
+                            }
+
+                            break;
                     }
+
+                    playlist.Tracks[i] = track;
                 }
 
-                if (Playlists.Count > 0)
-                {
-                    CurrentlyVisiblePlaylist = Playlists[0];
-                }
+                Playlists.Add(playlist);
+            }
+
+            if (Playlists.Count > 0)
+            {
+                CurrentlyVisiblePlaylist = Playlists[0];
             }
         }
 
