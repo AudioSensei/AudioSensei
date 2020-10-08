@@ -53,10 +53,14 @@
     <PackageReference Include="TagLibSharp" Version="2.2.0" />
     <PackageReference Include="YoutubeExplode" Version="5.1.6" />
   </ItemGroup>
+  <PropertyGroup>
+    <BassPath Condition="'$(TargetOs)' == 'WINDOWS'">bass.$(TargetArch).dll</BassPath>
+    <BassPath Condition="'$(TargetOs)' == 'LINUX'">libbass.$(TargetArch).so</BassPath>
+    <BassPath Condition="'$(TargetOs)' == 'OSX'">libbass.$(TargetArch).dylib</BassPath>
+    <DefineConstants Condition="!Exists('$(BassPath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
-    <None Update="bass.$(TargetArch).dll" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />
-    <None Update="libbass.$(TargetArch).so" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
-    <None Update="libbass.$(TargetArch).dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
+    <None Update="$(BassPath)" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />

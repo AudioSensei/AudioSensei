@@ -16,6 +16,10 @@ using Avalonia.ReactiveUI;
 #error Unsupported architecture!
 #endif
 
+#if NO_LIBRARY
+#error Target doesn't support a library!
+#endif
+
 namespace AudioSensei
 {
     class Program
