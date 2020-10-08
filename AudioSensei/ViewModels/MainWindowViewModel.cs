@@ -150,13 +150,8 @@ namespace AudioSensei.ViewModels
                 Directory.CreateDirectory("Playlists");
             }
 
-            foreach (var file in Directory.GetFiles("Playlists"))
+            foreach (var file in Directory.EnumerateFiles("Playlists", "*.json"))
             {
-                if (!file.EndsWith(".json"))
-                {
-                    continue;
-                }
-
                 var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
 
                 for (int i = 0; i < playlist.Tracks.Count; i++)
@@ -178,7 +173,7 @@ namespace AudioSensei.ViewModels
                                     ? "Unknown"
                                     : tagFile.Tag.JoinedPerformers;
                             }
-                            catch (Exception)
+                            catch
                             {
                                 track.Name = Path.GetFileNameWithoutExtension(track.Url);
                                 track.Author = "Unknown";
