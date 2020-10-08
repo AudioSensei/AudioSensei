@@ -4,6 +4,18 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
+#if NO_RID
+#warning No RuntimeIdentifier set, building for current platform!
+#endif
+
+#if INVALID_OS
+#error Unsupported OS!
+#endif
+
+#if INVALID_ARCH
+#error Unsupported architecture!
+#endif
+
 namespace AudioSensei
 {
     class Program
