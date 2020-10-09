@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentation>true</GenerateDocumentation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -54,13 +55,16 @@
     <PackageReference Include="YoutubeExplode" Version="5.1.6" />
   </ItemGroup>
   <PropertyGroup>
-    <BassPath Condition="'$(TargetOs)' == 'WINDOWS'">bass.$(TargetArch).dll</BassPath>
-    <BassPath Condition="'$(TargetOs)' == 'LINUX'">libbass.$(TargetArch).so</BassPath>
-    <BassPath Condition="'$(TargetOs)' == 'OSX'">libbass.$(TargetArch).dylib</BassPath>
-    <DefineConstants Condition="!Exists('$(BassPath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
+    <BassSourcePath Condition="'$(TargetOs)' == 'WINDOWS'">bass.$(TargetArch).dll</BassSourcePath>
+    <BassSourcePath Condition="'$(TargetOs)' == 'LINUX'">libbass.$(TargetArch).so</BassSourcePath>
+    <BassSourcePath Condition="'$(TargetOs)' == 'OSX'">libbass.$(TargetArch).dylib</BassSourcePath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'WINDOWS'">bass.dll</BassTargetPath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'LINUX'">libbass.so</BassTargetPath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'OSX'">libbass.dylib</BassTargetPath>
+    <DefineConstants Condition="!Exists('$(BassSourcePath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <None Update="$(BassPath)" CopyToOutputDirectory="Always" />
+    <None Update="$(BassSourcePath)" Link="$(BassTargetPath)" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />

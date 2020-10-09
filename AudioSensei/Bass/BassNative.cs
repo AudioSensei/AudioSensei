@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using Serilog;
 
 namespace AudioSensei.Bass
 {
@@ -16,13 +18,7 @@ namespace AudioSensei.Bass
         private const string Arch = "ARM64";
 #endif
 
-#if WINDOWS
-        private const string Bass = "bass." + Arch + ".dll";
-#elif LINUX
-        private const string Bass = "libbass." + Arch + ".so";
-#elif OSX
-        private const string Bass = "libbass." + Arch + ".dylib";
-#endif
+        private const string Bass = "bass";
 
 #if WINDOWS
         private const UnmanagedType StringMarshal = UnmanagedType.LPWStr;
@@ -44,10 +40,12 @@ namespace AudioSensei.Bass
         }
 #endif
 
-        public static void Initialize(int device = -1, uint frequency = 44000)
+        public static unsafe void Initialize(int device = -1, uint frequency = 44000)
         {
             lock (LoadLock)
             {
+                Log.Information($"Loading Bass version {BASS_GetVersion()}");
+
 #if WINDOWS
                 const string filter = "*." + Arch + ".dll";
 #elif LINUX
@@ -59,8 +57,14 @@ namespace AudioSensei.Bass
                 foreach (var file in Directory.EnumerateFiles("BassPlugins", filter, SearchOption.AllDirectories))
                 {
                     var path = Path.GetFullPath(file);
-                    if (BASS_PluginLoad(path, PluginUnicodeFlag) == 0)
+                    var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
+                    if (handle == 0)
                         throw new BassException($"Loading {path} as plugin failed");
+                    var infoPtr = BASS_PluginGetInfo(handle);
+                    if (infoPtr == null)
+                        throw new BassException($"Getting plugin info for {path} failed");
+                    var info = *infoPtr;
+                    Log.Information($"Loaded Bass plugin {Path.GetFileNameWithoutExtension(path)} version {info.version}. Supported formats: {string.Join(", ", ListSupportedFormats(info))}");
                 }
 
                 // ReSharper disable once RedundantAssignment
@@ -90,7 +94,25 @@ namespace AudioSensei.Bass
                     }
                 }
 
+                if (_floatFlag.HasFlag(StreamFlags.SampleFloat))
+                {
+                    Log.Information("Enabling floating point data output");
+                }
+
+
+                Log.Information($"Setting useragent to {WebHelper.UserAgent}");
                 BASS_SetConfigPtr(BassConfig.NetAgent, WebHelper.UserAgent);
+                
+                Log.Information("Bass initialization complete");
+            }
+        }
+
+        private static IEnumerable<string> ListSupportedFormats(BassPluginInfo info)
+        {
+            for (int i = 0; i < info.formatc; i++)
+            {
+                var f = info.GetFormatAt(i);
+                yield return $"Format: {Marshal.PtrToStringUTF8(f.name)} - extensions: {Marshal.PtrToStringUTF8(f.exts)}";
             }
         }
 
@@ -217,6 +239,9 @@ namespace AudioSensei.Bass
         private static extern bool BASS_PluginFree(uint handle);
 
         [DllImport(Bass)]
+        private static extern unsafe BassPluginInfo* BASS_PluginGetInfo(uint handle);
+
+        [DllImport(Bass)]
         private static extern bool BASS_Init(int device, uint frequency, uint flags, IntPtr window, IntPtr clsid);
 
         [DllImport(Bass)]
@@ -254,6 +279,9 @@ namespace AudioSensei.Bass
 
         [DllImport(Bass)]
         private static extern uint BASS_ErrorGetCode();
+
+        [DllImport(Bass)]
+        private static extern BassVersion BASS_GetVersion();
 
         [DllImport(Bass)]
         private static extern uint BASS_GetConfig(BassConfig option);
