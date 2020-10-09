@@ -39,7 +39,10 @@ jobs:
 
     - if: matrix.arch == 'arm' || matrix.arch == 'arm64'
       name: Enter container
-      run: docker run -it --rm multiarch/debian-debootstrap:arm64-stretch
+      run: docker run --rm multiarch/debian-debootstrap:arm64-stretch
+      
+    - name: Teststst
+      run: uname -m
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1.7.2
