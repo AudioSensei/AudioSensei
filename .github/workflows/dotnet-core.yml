@@ -11,14 +11,23 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         framework: ['3.1']
-        arch: ['x64']
+        arch: ['x86', 'x64', 'arm', 'arm64']
+        exclude: 
+        - os: windows-latest
+          arch: 'arm'
+        - os: windows-latest
+          arch: 'arm64'
+        - os: ubuntu-latest
+          arch: 'x86'
+        - os: ubuntu-latest
+          arch: 'arm'
+        - os: ubuntu-latest
+          arch: 'arm64'
         include: 
         - os: windows-latest
           target: win
         - os: ubuntu-latest
           target: linux
-        - arch: 'x86'
-          os: windows-latest
     timeout-minutes: 30
 
     steps:
