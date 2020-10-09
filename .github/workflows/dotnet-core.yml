@@ -29,14 +29,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.3
     
-    - if: matrix.arch == 'ARM32'
+    - if: matrix.os == 'ubuntu-latest' && matrix.arch == 'ARM32'
       name: Setup QEMU
       uses: docker/setup-qemu-action@v1
       with:
         image: tonistiigi/binfmt:latest
         platforms: linux/arm/v7
 
-    - if: matrix.arch == 'ARM64'
+    - if: matrix.os == 'ubuntu-latest' && matrix.arch == 'ARM64'
       name: Setup QEMU
       uses: docker/setup-qemu-action@v1
       with:
