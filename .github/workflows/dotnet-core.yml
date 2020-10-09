@@ -11,14 +11,14 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         framework: ['3.1']
-        arch: ['x86', 'x64', 'ARM32', 'ARM64']
+        arch: ['x86', 'x64', 'arm', 'arm64']
         exclude: 
         - os: ubuntu-latest
           arch: 'x86'
         - os: windows-latest
-          arch: 'ARM32'
+          arch: 'arm'
         - os: windows-latest
-          arch: 'ARM64'
+          arch: 'arm64'
         include: 
         - os: windows-latest
           target: win
@@ -33,14 +33,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.3
     
-    - if: matrix.arch == 'ARM32'
+    - if: matrix.arch == 'arm'
       name: Setup QEMU
       uses: docker/setup-qemu-action@v1
       with:
         image: tonistiigi/binfmt:latest
         platforms: linux/arm/v7
 
-    - if: matrix.arch == 'ARM64'
+    - if: matrix.arch == 'arm64'
       name: Setup QEMU
       uses: docker/setup-qemu-action@v1
       with:
