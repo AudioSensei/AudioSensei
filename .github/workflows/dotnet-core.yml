@@ -38,7 +38,7 @@ jobs:
       run: dotnet restore -r ${{ matrix.target }}-${{ matrix.arch }}
       
     - name: Build ${{ matrix.target }}-${{ matrix.arch }}
-      run: dotnet publish -r ${{ matrix.target }}-${{ matrix.arch }} -c release -p:PublishReadyToRunShowWarnings=true
+      run: dotnet publish -r ${{ matrix.target }}-${{ matrix.arch }} -c release
       
     - name: Test
       run: dotnet test --runtime ${{ matrix.target }}-${{ matrix.arch }}
