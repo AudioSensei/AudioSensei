@@ -15,10 +15,8 @@ jobs:
         exclude: 
         - os: ubuntu-latest
           arch: 'x86'
-        exclude:
         - os: windows-latest
           arch: 'ARM32'
-        exclude:
         - os: windows-latest
           arch: 'ARM64'
         include: 
