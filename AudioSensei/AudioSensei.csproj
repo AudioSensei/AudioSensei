@@ -2,11 +2,36 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <LangVersion>8</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentation>true</GenerateDocumentation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <DefineConstants>$(DefineConstants);NO_RID</DefineConstants>
+    <TargetOs Condition="$([MSBuild]::IsOSPlatform('Windows'))">WINDOWS</TargetOs>
+    <TargetOs Condition="$([MSBuild]::IsOSPlatform('Linux'))">LINUX</TargetOs>
+    <TargetOs Condition="$([MSBuild]::IsOSPlatform('OSX'))">OSX</TargetOs>
+    <TargetArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X86'">X86</TargetArch>
+    <TargetArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">X64</TargetArch>
+    <TargetArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm'">ARM</TargetArch>
+    <TargetArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">ARM64</TargetArch>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <TargetOs Condition="$(RuntimeIdentifier.StartsWith('win', StringComparison.OrdinalIgnoreCase))">WINDOWS</TargetOs>
+    <TargetOs Condition="$(RuntimeIdentifier.StartsWith('linux', StringComparison.OrdinalIgnoreCase))">LINUX</TargetOs>
+    <TargetOs Condition="$(RuntimeIdentifier.StartsWith('osx', StringComparison.OrdinalIgnoreCase))">OSX</TargetOs>
+    <TargetArch Condition="$(RuntimeIdentifier.EndsWith('x86', StringComparison.OrdinalIgnoreCase))">X86</TargetArch>
+    <TargetArch Condition="$(RuntimeIdentifier.EndsWith('x64', StringComparison.OrdinalIgnoreCase))">X64</TargetArch>
+    <TargetArch Condition="$(RuntimeIdentifier.EndsWith('arm', StringComparison.OrdinalIgnoreCase))">ARM</TargetArch>
+    <TargetArch Condition="$(RuntimeIdentifier.EndsWith('arm64', StringComparison.OrdinalIgnoreCase))">ARM64</TargetArch>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants Condition="'$(TargetOs)' == '' Or ('$(TargetOs)' != 'WINDOWS' And '$(TargetOs)' != 'LINUX' And '$(TargetOs)' != 'OSX')">$(DefineConstants);INVALID_OS</DefineConstants>
+    <DefineConstants Condition="'$(TargetArch)' == '' Or ('$(TargetArch)' != 'X86' And '$(TargetArch)' != 'X64' And '$(TargetArch)' != 'ARM' And '$(TargetArch)' != 'ARM64')">$(DefineConstants);INVALID_ARCH</DefineConstants>
+    <DefineConstants Condition="'$(TargetOs)' != '' And ('$(TargetOs)' == 'WINDOWS' Or '$(TargetOs)' == 'LINUX' Or '$(TargetOs)' == 'OSX')">$(DefineConstants);$(TargetOs)</DefineConstants>
+    <DefineConstants Condition="'$(TargetArch)' != '' And ('$(TargetArch)' == 'X86' Or '$(TargetArch)' == 'X64' Or '$(TargetArch)' == 'ARM' Or '$(TargetArch)' == 'ARM64')">$(DefineConstants);$(TargetArch)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -29,18 +54,24 @@
     <PackageReference Include="TagLibSharp" Version="2.2.0" />
     <PackageReference Include="YoutubeExplode" Version="5.1.6" />
   </ItemGroup>
+  <PropertyGroup>
+    <BassSourcePath Condition="'$(TargetOs)' == 'WINDOWS'">bass.$(TargetArch).dll</BassSourcePath>
+    <BassSourcePath Condition="'$(TargetOs)' == 'LINUX'">libbass.$(TargetArch).so</BassSourcePath>
+    <BassSourcePath Condition="'$(TargetOs)' == 'OSX'">libbass.$(TargetArch).dylib</BassSourcePath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'WINDOWS'">bass.dll</BassTargetPath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'LINUX'">libbass.so</BassTargetPath>
+    <BassTargetPath Condition="'$(TargetOs)' == 'OSX'">libbass.dylib</BassTargetPath>
+    <DefineConstants Condition="!Exists('$(BassSourcePath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
-    <None Update="bass.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="libbass.dylib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="libbass.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Update="$(BassSourcePath)" Link="$(BassTargetPath)" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(SolutionDir)AudioSensei\BassPlugins\**" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).dll" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).so" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
+    <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
