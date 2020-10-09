@@ -7,7 +7,7 @@ jobs:
 
     name: .Net Core ${{ matrix.framework }} on ${{ matrix.os }} for ${{ matrix.target }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-    strategy:
+    strategy: 
       matrix:
         os: [windows-latest, ubuntu-latest]
         framework: ['3.1']
@@ -39,7 +39,7 @@ jobs:
 
     - if: matrix.arch == 'arm' || matrix.arch == 'arm64'
       name: Enter container
-      run: docker run --rm multiarch/debian-debootstrap:arm64-stretch
+      run: docker run -i --rm multiarch/debian-debootstrap:arm64-stretch
       
     - name: Teststst
       run: uname -m
