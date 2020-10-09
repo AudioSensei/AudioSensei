@@ -5,38 +5,46 @@ on: [push, pull_request]
 jobs:
   build:
 
-    name: .Net Core ${{ matrix.framework }} on ${{ matrix.os }}
+    name: .Net Core ${{ matrix.framework }} on ${{ matrix.os }} for ${{ matrix.target }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
         framework: ['3.1']
+        arch: ['x86', 'x64']
+        exclude: 
+        - os: ubuntu-latest
+          arch: 'x86'
         include: 
         - os: windows-latest
-          target: win-x64
+          target: win
         - os: ubuntu-latest
-          target: linux-x64
+          target: linux
     timeout-minutes: 30
 
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
     steps:
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v2.3.3
       
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1.5.0
+      uses: actions/setup-dotnet@v1.7.2
       with:
         dotnet-version: ${{ matrix.framework }}
       
     - name: Install dependencies
-      run: dotnet restore -r ${{ matrix.target }}
+      run: dotnet restore -r ${{ matrix.target }}-${{ matrix.arch }}
       
-    - name: Build ${{ matrix.target }}
-      run: dotnet publish -r ${{ matrix.target }} -c release -p:PublishReadyToRunShowWarnings=true
+    - name: Build ${{ matrix.target }}-${{ matrix.arch }}
+      run: dotnet publish -r ${{ matrix.target }}-${{ matrix.arch }} -c release
       
     - name: Test
-      run: dotnet test
+      run: dotnet test --runtime ${{ matrix.target }}-${{ matrix.arch }}
       
-    - name: Upload ${{ matrix.target }}
-      uses: actions/upload-artifact@v2.0.1
+    - name: Upload ${{ matrix.target }}-${{ matrix.arch }}
+      uses: actions/upload-artifact@v2
       with:
-        name: AudioSensei-${{ matrix.target }}
-        path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}/publish
+        name: AudioSensei-${{ matrix.target }}-${{ matrix.arch }}
+        path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}-${{ matrix.arch }}/publish
