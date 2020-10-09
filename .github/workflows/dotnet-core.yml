@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    name: .Net Core ${{ matrix.framework }} on ${{ matrix.os }}
+    name: .Net Core ${{ matrix.framework }} on ${{ matrix.os }} for ${{ matrix.target }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -15,9 +15,9 @@ jobs:
         include: 
         - os: windows-latest
           arch: 'x86'
-          target: win-${{ arch }}
+          target: win
         - os: ubuntu-latest
-          target: linux-${{ arch }}
+          target: linux
     timeout-minutes: 30
 
     steps:
@@ -29,16 +29,16 @@ jobs:
         dotnet-version: ${{ matrix.framework }}
       
     - name: Install dependencies
-      run: dotnet restore -r ${{ matrix.target }}
+      run: dotnet restore -r ${{ matrix.target }}-${{ matrix.arch }}
       
     - name: Build ${{ matrix.target }}
-      run: dotnet publish -r ${{ matrix.target }} -c release -p:PublishReadyToRunShowWarnings=true
+      run: dotnet publish -r ${{ matrix.target }}-${{ matrix.arch }} -c release -p:PublishReadyToRunShowWarnings=true
       
     - name: Test
-      run: dotnet test --runtime ${{ matrix.target }}
+      run: dotnet test --runtime ${{ matrix.target }}-${{ matrix.arch }}
       
     - name: Upload ${{ matrix.target }}
       uses: actions/upload-artifact@v2.0.1
       with:
         name: AudioSensei-${{ matrix.target }}
-        path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}/publish
+        path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}-${{ matrix.arch }}/publish
