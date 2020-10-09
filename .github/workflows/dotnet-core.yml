@@ -15,9 +15,9 @@ jobs:
         include: 
         - os: windows-latest
           arch: 'x86'
-          target: win-${{ matrix.arch }}
+          target: win-${{ arch }}
         - os: ubuntu-latest
-          target: linux-${{ matrix.arch }}
+          target: linux-${{ arch }}
     timeout-minutes: 30
 
     steps:
