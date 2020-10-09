@@ -31,24 +31,24 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v2.2.0
+    - uses: actions/checkout@v2.3.3
       
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1.5.0
+      uses: actions/setup-dotnet@v1.7.2
       with:
         dotnet-version: ${{ matrix.framework }}
       
     - name: Install dependencies
       run: dotnet restore -r ${{ matrix.target }}-${{ matrix.arch }}
       
-    - name: Build ${{ matrix.target }}
+    - name: Build ${{ matrix.target }}-${{ matrix.arch }}
       run: dotnet publish -r ${{ matrix.target }}-${{ matrix.arch }} -c release -p:PublishReadyToRunShowWarnings=true
       
     - name: Test
       run: dotnet test --runtime ${{ matrix.target }}-${{ matrix.arch }}
       
-    - name: Upload ${{ matrix.target }}
-      uses: actions/upload-artifact@v2.0.1
+    - name: Upload ${{ matrix.target }}-${{ matrix.arch }}
+      uses: actions/upload-artifact@v2
       with:
-        name: AudioSensei-${{ matrix.target }}
+        name: AudioSensei-${{ matrix.target }}-${{ matrix.arch }}
         path: ${{ github.workspace }}/AudioSensei/bin/Release/netcoreapp${{ matrix.framework }}/${{ matrix.target }}-${{ matrix.arch }}/publish
