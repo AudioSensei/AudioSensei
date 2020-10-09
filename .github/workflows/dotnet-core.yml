@@ -14,10 +14,11 @@ jobs:
         arch: ['x64']
         include: 
         - os: windows-latest
-          arch: 'x86'
           target: win
         - os: ubuntu-latest
           target: linux
+        - arch: 'x86'
+          os: windows-latest
     timeout-minutes: 30
 
     steps:
