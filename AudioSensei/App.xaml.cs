@@ -1,4 +1,5 @@
-﻿using AudioSensei.Bass;
+﻿using System;
+using AudioSensei.Bass;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -31,6 +32,18 @@ namespace AudioSensei
             SerilogLogger.Initialize(logger);
             Log.Logger = logger;
 
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+            {
+                if (args.ExceptionObject is Exception ex)
+                {
+                    Log.Error(ex, $"Caught an unhandled {ex.GetType().Name} exception, {(args.IsTerminating ? "" : "not ")}terminating the program");
+                }
+                else
+                {
+                    Log.Error($"Caught an unidentified unhandled exception, {(args.IsTerminating ? "" : "not ")}terminating the program");
+                }
+            };
+
             Log.Information("Opening a new instance of AudioSensei");
 
             AvaloniaXamlLoader.Load(this);
@@ -40,10 +53,9 @@ namespace AudioSensei
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(new BassAudioBackend()),
-                };
+                var window = new MainWindow();
+                window.DataContext = new MainWindowViewModel(new BassAudioBackend(window.PlatformImpl.Handle.Handle));
+                desktop.MainWindow = window;
             }
 
             base.OnFrameworkInitializationCompleted();
