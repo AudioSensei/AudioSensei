@@ -35,7 +35,11 @@ jobs:
     
     - if: matrix.arch == 'arm' || matrix.arch == 'arm64'
       name: Setup QEMU
-      run: docker run --rm --privileged multiarch/qemu-user-static:register
+      id: qemu
+      uses: docker/setup-qemu-action@v1
+      with:
+        image: tonistiigi/binfmt:latest
+        platforms: linux/arm64
 
     - if: matrix.arch == 'arm' || matrix.arch == 'arm64'
       name: Enter container
