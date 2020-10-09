@@ -48,7 +48,7 @@ jobs:
         platforms: linux/arm64
     
     - name: Teststst
-      run: uname -m
+      run: docker ps
 
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1.7.2
