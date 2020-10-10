@@ -8,6 +8,7 @@ using AudioSensei.ViewModels;
 using AudioSensei.Views;
 using Serilog;
 using System.IO;
+using AudioSensei.Configuration;
 
 namespace AudioSensei
 {
@@ -53,6 +54,7 @@ namespace AudioSensei
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                var configuration = AudioSenseiConfiguration.LoadOrCreate("config.json");
                 var window = new MainWindow();
                 window.DataContext = new MainWindowViewModel(new BassAudioBackend(window.PlatformImpl.Handle.Handle));
                 desktop.MainWindow = window;
