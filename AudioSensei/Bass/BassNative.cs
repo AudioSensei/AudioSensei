@@ -148,7 +148,7 @@ namespace AudioSensei.Bass
 
         public static BassHandle CreateStreamFromUrl(string url)
         {
-            var handle = BASS_StreamCreateURL(url, 0, _floatFlag | StreamFlags.StreamAutoFree | StreamFlags.StreamBlock | StreamFlags.StreamRestrate | UnicodeFlag, null, IntPtr.Zero);
+            var handle = BASS_StreamCreateURL(url, 0, _floatFlag | StreamFlags.StreamAutoFree /*| StreamFlags.StreamRestrate*/ | UnicodeFlag, null, IntPtr.Zero);
 
             if (handle == BassHandle.Null)
             {
