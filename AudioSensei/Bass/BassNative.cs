@@ -40,7 +40,7 @@ namespace AudioSensei.Bass
         }
 #endif
 
-        public static unsafe void Initialize(int device = -1, uint frequency = 44000)
+        public static unsafe void Initialize(int device = -1, uint frequency = 44000, IntPtr windowHandle = default)
         {
             lock (LoadLock)
             {
@@ -67,13 +67,14 @@ namespace AudioSensei.Bass
                     Log.Information($"Loaded Bass plugin {Path.GetFileNameWithoutExtension(path)} version {info.version}. Supported formats: {string.Join(", ", ListSupportedFormats(info))}");
                 }
 
-                // ReSharper disable once RedundantAssignment
-                var window = IntPtr.Zero;
 #if WINDOWS
-                window = GetActiveWindow();
+                if (windowHandle == IntPtr.Zero)
+                {
+                    windowHandle = GetActiveWindow();
+                }
 #endif
 
-                if (!BASS_Init(device, frequency, 0, window, IntPtr.Zero))
+                if (!BASS_Init(device, frequency, 0, windowHandle, IntPtr.Zero))
                 {
                     throw new BassException("Init failed");
                 }

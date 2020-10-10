@@ -60,9 +60,10 @@ namespace AudioSensei.Bass
         };
 
         private BassHandle handle = BassHandle.Null;
-        public BassAudioBackend()
+
+        public BassAudioBackend(IntPtr windowHandle = default)
         {
-            BassNative.Initialize();
+            BassNative.Initialize(windowHandle: windowHandle);
 
             timer.Tick += Tick;
         }
