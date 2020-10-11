@@ -1,10 +1,22 @@
 ﻿using AudioSensei.Bass;
+using Serilog;
+using Serilog.Events;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace AudioSensei.Tests
 {
     public class BassTests
     {
+        public BassTests(ITestOutputHelper output)
+        {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.TestOutput(output, LogEventLevel.Verbose)
+                .CreateLogger()
+                .ForContext<BassTests>();
+        }
+
         [Fact]
         public void TestInitialization()
         {
