@@ -1,4 +1,4 @@
-﻿namespace AudioSensei.Bass
+﻿namespace AudioSensei.Bass.Native
 {
     public enum ChannelAttribute
     {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -26,15 +25,16 @@ namespace AudioSensei
             var c = await _client.Videos.ClosedCaptions.GetManifestAsync(b.Id);
             var s = await _client.Videos.Streams.GetManifestAsync(b.Id);
 
-            var link = s.GetAudioOnly().WithHighestBitrate().Url;
+            var link = new Uri(s.GetAudioOnly().WithHighestBitrate().Url);
 
-            _backend.PlayUrl(link);
+            var a = _backend.Play(link);
 
             return new YoutubeInfo
             {
                 Video = b,
                 Captions = c.Tracks,
-                Url = link
+                Url = link,
+                AudioStream = a
             };
         }
 
@@ -42,7 +42,8 @@ namespace AudioSensei
         {
             public Video Video;
             public IReadOnlyList<ClosedCaptionTrackInfo> Captions;
-            public string Url;
+            public Uri Url;
+            public IAudioStream AudioStream;
         }
     }
 }
