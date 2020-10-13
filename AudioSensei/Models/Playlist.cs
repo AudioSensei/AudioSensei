@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 
 namespace AudioSensei.Models
@@ -59,6 +60,16 @@ namespace AudioSensei.Models
             Name = name;
             Author = author;
             Description = description;
+        }
+
+        public static Playlist Load(string filePath)
+        {
+            return JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(filePath));
+        }
+
+        public void Save(string filePath)
+        {
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
         public bool Equals(Playlist other)
