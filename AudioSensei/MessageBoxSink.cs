@@ -16,7 +16,7 @@ namespace AudioSensei
         private const string User32 = "user32";
 
         [DllImport(User32, EntryPoint = "MessageBoxW", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern int MessageBoxWINDOWS(IntPtr hwnd, string message, string title, uint flags);
+        private static extern int MessageBoxWindows(IntPtr hwnd, string message, string title, uint flags);
 #else
         private const string SdlDll = "SDL2";
 
@@ -77,7 +77,7 @@ namespace AudioSensei
                     LogEventLevel.Fatal => 0x00000000 | 0x00000010,
                     _ => throw new ArgumentOutOfRangeException(nameof(logEvent.Level), logEvent.Level, "Invalid LogEventLevel")
                 };
-                if (MessageBoxWINDOWS(IntPtr.Zero, message, title, flags) == 0)
+                if (MessageBoxWindows(IntPtr.Zero, message, title, flags) == 0)
                     throw new Win32Exception();
 #else
                 uint sdlflags = logEvent.Level switch
