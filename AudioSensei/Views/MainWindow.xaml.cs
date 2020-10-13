@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using AudioSensei.Models;
 using AudioSensei.ViewModels;
 using Avalonia;
@@ -28,6 +29,7 @@ namespace AudioSensei.Views
         private void OnDrop(object sender, DragEventArgs dragEventArgs)
         {
             var dataContext = DataContext as MainWindowViewModel;
+            var playlistPath = Path.Combine(App.ApplicationDataPath, "Playlists");
 
             if (dragEventArgs.Data.Contains(DataFormats.FileNames))
             {
@@ -38,7 +40,7 @@ namespace AudioSensei.Views
                         var track = new Track("", Source.File, fileName);
                         track.LoadMetadataFromFile();
                         dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
-                        dataContext.CurrentlyVisiblePlaylist.Save($"Playlists/{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json");
+                        dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                     }
                 }
             }
@@ -54,7 +56,7 @@ namespace AudioSensei.Views
                     {
                         var track = new Track("", Source.YouTube, dragEventArgs.Data.GetText());
                         dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
-                        dataContext.CurrentlyVisiblePlaylist.Save($"Playlists/{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json");
+                        dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                     }
                 }
                 catch
