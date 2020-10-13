@@ -5,6 +5,7 @@ using System.Threading;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
+using Serilog.Debugging;
 using Serilog.Events;
 
 namespace AudioSensei
@@ -12,10 +13,10 @@ namespace AudioSensei
     public class MessageBoxSink : ILogEventSink
     {
 #if WINDOWS
-        private const string WindowsDll = "user32";
+        private const string User32 = "user32";
 
-        [DllImport(WindowsDll, EntryPoint = "MessageBoxW", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern int MessageBoxWindows(IntPtr hwnd, string message, string title, uint flags);
+        [DllImport(User32, EntryPoint = "MessageBoxW", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int MessageBoxWINDOWS(IntPtr hwnd, string message, string title, uint flags);
 #else
         private const string SdlDll = "SDL2";
 
@@ -76,7 +77,7 @@ namespace AudioSensei
                     LogEventLevel.Fatal => 0x00000000 | 0x00000010,
                     _ => throw new ArgumentOutOfRangeException(nameof(logEvent.Level), logEvent.Level, "Invalid LogEventLevel")
                 };
-                if (MessageBoxWindows(IntPtr.Zero, message, title, flags) == 0)
+                if (MessageBoxWINDOWS(IntPtr.Zero, message, title, flags) == 0)
                     throw new Win32Exception();
 #else
                 uint sdlflags = logEvent.Level switch
