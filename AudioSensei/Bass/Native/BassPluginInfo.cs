@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace AudioSensei.Bass
+namespace AudioSensei.Bass.Native
 {
     [StructLayout(LayoutKind.Sequential)]
     internal readonly unsafe struct BassPluginInfo
@@ -17,6 +18,15 @@ namespace AudioSensei.Bass
                 throw new IndexOutOfRangeException();
             }
             return formats[index];
+        }
+
+        public IEnumerable<string> ListSupportedFormats()
+        {
+            for (int i = 0; i < formatc; i++)
+            {
+                var f = GetFormatAt(i);
+                yield return $"Format: {Marshal.PtrToStringUTF8(f.name)} - extensions: {Marshal.PtrToStringUTF8(f.exts)}";
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace AudioSensei.Bass
+﻿namespace AudioSensei.Bass.Native
 {
     internal enum BassConfig : uint
     {

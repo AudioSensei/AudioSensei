@@ -1,18 +1,23 @@
 ﻿using System;
 
-namespace AudioSensei.Bass
+namespace AudioSensei.Bass.Native
 {
     [Flags]
     internal enum StreamFlags : uint
     {
-        None = 0,
+        None = 0x0,
 
+        Sample8Bits = 0x1,
         SampleFloat = 0x100,
         SampleMono = 0x2,
-        SampleSoftware = 0x10,
-        Sample3D = 0x8,
         SampleLoop = 0x4,
+
+        SampleSoftware = 0x10,
         SampleFx = 0x80,
+        SampleVam = 0x40,
+
+        Sample3D = 0x8,
+        SampleMuteMax = 0x20,
 
         StreamPrescan = 0x20000,
 
@@ -22,6 +27,15 @@ namespace AudioSensei.Bass
 
         StreamAutoFree = 0x40000,
         StreamDecode = 0x200000,
+
+        MusicRamp = 0x200,
+        MusicRamps = 0x400,
+        MusicSurround = 0x800,
+        MusicSurround2 = 0x1000,
+        MusicNonInter = 0x10000,
+        MusicFt2Mod = 0x2000,
+        MusicPt1Mod = 0x4000,
+        MusicStopback = 0x80000,
 
         SpeakerFront = 0x1000000,
         SpeakerRear = 0x2000000,
