@@ -1,23 +1,45 @@
 ﻿using System;
+using System.IO;
 using AudioSensei.Bass;
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Avalonia.Logging.Serilog;
+using AudioSensei.Configuration;
 using AudioSensei.ViewModels;
 using AudioSensei.Views;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using Serilog;
-using System.IO;
-using AudioSensei.Configuration;
+using Serilog.Events;
+using Serilog.Sinks.File.GZip;
 
 namespace AudioSensei
 {
     public class App : Application
     {
+        public static Window MainWindow { get; private set; }
+        public static string ApplicationDataPath { get; }
+
+        static App()
+        {
+            ApplicationDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AudioSensei");
+
+            if (!Directory.Exists(ApplicationDataPath))
+            {
+                Directory.CreateDirectory(ApplicationDataPath);
+            }
+        }
+
         public override void Initialize()
         {
             const string template = "[{Timestamp:yyyy-MM-dd HH:mm:ss}] [{Level:u3}] {Message:lj}{NewLine}{Exception}";
-            const string latestLogPath = @"logs\latest.log";
+            string directory = Path.Combine(ApplicationDataPath, "logs");
+            string latestLogPath = Path.Combine(directory, "latest.log");
+            string rollingLogPath = Path.Combine(directory, $"log-{DateTimeOffset.Now:yyyyMMddHHmm}.log.gz");
+
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
             if (File.Exists(latestLogPath))
             {
@@ -27,10 +49,11 @@ namespace AudioSensei
             var logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .WriteTo.File(latestLogPath, outputTemplate: template)
-                .WriteTo.File(@"logs\log-.log", outputTemplate: template, rollingInterval: RollingInterval.Day, retainedFileCountLimit: 9)
+                .WriteTo.File(rollingLogPath, outputTemplate: template, buffered: true, hooks: new GZipHooks())
+                .WriteTo.MessageBox(restrictedToMinimumLevel: LogEventLevel.Warning)
                 .CreateLogger();
 
-            SerilogLogger.Initialize(logger);
+            Avalonia.Logging.Logger.Sink = new AvaloniaSerilogSink(logger);
             Log.Logger = logger;
 
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
@@ -54,10 +77,11 @@ namespace AudioSensei
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                var configuration = AudioSenseiConfiguration.LoadOrCreate("config.json");
-                var window = new MainWindow();
-                window.DataContext = new MainWindowViewModel(new BassAudioBackend(window.PlatformImpl.Handle.Handle));
-                desktop.MainWindow = window;
+                var configuration = AudioSenseiConfiguration.LoadOrCreate(Path.Combine(ApplicationDataPath, "config.json"));
+                MainWindow = new MainWindow();
+                MainWindow.DataContext = new MainWindowViewModel(new BassAudioBackend(MainWindow.PlatformImpl.Handle.Handle));
+                desktop.MainWindow = MainWindow;
+                desktop.Exit += (sender, args) => Log.CloseAndFlush();
             }
 
             base.OnFrameworkInitializationCompleted();
