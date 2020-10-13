@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using AudioSensei.Bass.Native;
 using AudioSensei.Bass.Native.Handles;
 
@@ -37,6 +38,7 @@ namespace AudioSensei.Bass
         public StreamHandle Handle { get; }
         protected readonly BassChannelInfo Info;
         private readonly SyncHandle _restartSync;
+        private readonly object _freeLock = new object();
 
         internal BassStream(StreamHandle handle)
         {
@@ -56,6 +58,14 @@ namespace AudioSensei.Bass
             BassNative.Singleton.PlayChannel(Handle);
 
             _restartSync = BassNative.Singleton.SetSync(handle, BassSync.DevFail, 0, (u, channel, data, user) => BassNative.Singleton.Restart(), IntPtr.Zero);
+            BassNative.Singleton.SetSync(handle, BassSync.Free, 0, (u, channel, data, user) =>
+            {
+                if (Monitor.TryEnter(_freeLock))
+                {
+                    GC.SuppressFinalize(this);
+                    _disposed = true;
+                }
+            }, IntPtr.Zero);
         }
 
         public void Resume()
@@ -74,19 +84,29 @@ namespace AudioSensei.Bass
 
         private void FreeStream()
         {
-            if (_disposed)
+            var lockWasTaken = false;
+            var temp = _freeLock;
+            try
             {
-                return;
-            }
+                Monitor.Enter(temp, ref lockWasTaken);
+                if (_disposed || (BassNative.Singleton.GetChannelStatus(Handle) == ChannelStatus.Stopped && BassNative.GetLastErrorCode() != BassError.Ok))
+                {
+                    return;
+                }
 
-            BassNative.Singleton.RemoveSync(Handle, _restartSync);
-            BassNative.Singleton.StopChannel(Handle);
-            if (!Info.flags.HasFlag(StreamFlags.StreamAutoFree))
-            {
+                BassNative.Singleton.RemoveSync(Handle, _restartSync);
+                BassNative.Singleton.StopChannel(Handle);
                 BassNative.Singleton.FreeStream(Handle);
-            }
 
-            _disposed = true;
+                _disposed = true;
+            }
+            finally
+            {
+                if (lockWasTaken)
+                {
+                    Monitor.Exit(temp);
+                }
+            }
         }
 
         public void Dispose()

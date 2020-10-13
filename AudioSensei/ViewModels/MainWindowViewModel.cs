@@ -72,6 +72,11 @@ namespace AudioSensei.ViewModels
         }
         public int CurrentTrackIndex { get; set; } = -1;
 
+        // Current Stream
+        public string CurrentTimeFormatted => AudioStream == null ? "00:00" : AudioStream.CurrentTime.ToPlaybackPosition();
+        public string TotalTimeFormatted => AudioStream == null ? "00:00" : AudioStream.TotalTime.ToPlaybackPosition();
+        public int Total => AudioStream == null ? 0 : (int)(AudioStream.CurrentTime / AudioStream.TotalTime * 100);
+
         // Commands
         public ReactiveCommand<Unit, Unit> PlayOrPauseCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> StopCommand { get; private set; }
@@ -127,6 +132,8 @@ namespace AudioSensei.ViewModels
 
         ~MainWindowViewModel()
         {
+            AudioStream?.Dispose();
+            AudioStream = null;
             AudioBackend.Dispose();
         }
 
@@ -269,6 +276,7 @@ namespace AudioSensei.ViewModels
         private void Stop()
         {
             AudioStream?.Dispose();
+            AudioStream = null;
             timer.Stop();
         }
 
@@ -398,6 +406,7 @@ namespace AudioSensei.ViewModels
         private async Task Play(Track track)
         {
             AudioStream?.Dispose();
+            AudioStream = null;
 
             AudioStream = track.Source switch
             {
