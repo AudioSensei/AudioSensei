@@ -67,7 +67,7 @@
       <Grid Grid.Row="0" Grid.Column="1">
         <TabControl SelectedIndex="{Binding SelectedPageIndex}">
           <TabItem>
-            <DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedTrackIndex, Mode=TwoWay}" Items="{Binding CurrentlyVisiblePlaylist.Tracks}" >
+            <DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedTrackIndex, Mode=TwoWay}" Items="{Binding CurrentlyVisiblePlaylist.Tracks}" DragDrop.AllowDrop="True">
               <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
                 <DataGridTextColumn Header="Author" Binding="{Binding Author}" />

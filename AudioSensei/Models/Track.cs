@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using System.IO;
 
 namespace AudioSensei.Models
 {
@@ -46,6 +47,32 @@ namespace AudioSensei.Models
 
             Name = "";
             Author = author;
+        }
+
+        public static Track CreateFromFile(string filePath)
+        {
+            var track = new Track("", Source.File, filePath);
+            track.LoadMetadataFromFile();
+            return track;
+        }
+
+        public void LoadMetadataFromFile()
+        {
+            try
+            {
+                var tagFile = TagLib.File.Create(Url);
+                Name = string.IsNullOrEmpty(tagFile.Tag.Title)
+                    ? Path.GetFileNameWithoutExtension(Url)
+                    : tagFile.Tag.Title;
+                Author = string.IsNullOrEmpty(tagFile.Tag.JoinedPerformers)
+                    ? "Unknown"
+                    : tagFile.Tag.JoinedPerformers;
+            }
+            catch
+            {
+                Name = Path.GetFileNameWithoutExtension(Url);
+                Author = "Unknown";
+            }
         }
 
         public bool Equals(Track other)

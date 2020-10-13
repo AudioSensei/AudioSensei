@@ -152,7 +152,7 @@ namespace AudioSensei.ViewModels
 
             foreach (var file in Directory.EnumerateFiles("Playlists", "*.json"))
             {
-                var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
+                var playlist = Playlist.Load(file);
 
                 for (int i = 0; i < playlist.Tracks.Count; i++)
                 {
@@ -161,24 +161,7 @@ namespace AudioSensei.ViewModels
                     switch (track.Source)
                     {
                         case Source.File:
-                            TagLib.File tagFile;
-
-                            try
-                            {
-                                tagFile = TagLib.File.Create(track.Url);
-                                track.Name = string.IsNullOrEmpty(tagFile.Tag.Title)
-                                    ? Path.GetFileNameWithoutExtension(track.Url)
-                                    : tagFile.Tag.Title;
-                                track.Author = string.IsNullOrEmpty(tagFile.Tag.JoinedPerformers)
-                                    ? "Unknown"
-                                    : tagFile.Tag.JoinedPerformers;
-                            }
-                            catch
-                            {
-                                track.Name = Path.GetFileNameWithoutExtension(track.Url);
-                                track.Author = "Unknown";
-                            }
-
+                            track.LoadMetadataFromFile();
                             break;
                     }
 
