@@ -145,12 +145,13 @@ namespace AudioSensei.ViewModels
 
         private void LoadPlaylists()
         {
-            if (!Directory.Exists("Playlists"))
+            string playlistPath = Path.Combine(App.ApplicationDataPath, "Playlists");
+            if (!Directory.Exists(playlistPath))
             {
-                Directory.CreateDirectory("Playlists");
+                Directory.CreateDirectory(playlistPath);
             }
 
-            foreach (var file in Directory.EnumerateFiles("Playlists", "*.json"))
+            foreach (var file in Directory.EnumerateFiles(playlistPath, "*.json"))
             {
                 var playlist = JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(file));
 
