@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
+using System;
 
 #if NO_RID
 #warning No RuntimeIdentifier set, building for current platform!
