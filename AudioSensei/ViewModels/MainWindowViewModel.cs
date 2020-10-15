@@ -3,10 +3,19 @@ using Avalonia.Threading;
 using Newtonsoft.Json;
 using ReactiveUI;
 using System;
+using System.Buffers;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reactive;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
+using Serilog;
 
 namespace AudioSensei.ViewModels
 {
@@ -109,7 +118,10 @@ namespace AudioSensei.ViewModels
 
         // Tracks
         private int selectedTrackIndex = -1;
-    
+
+        // IPC
+        private const int ProtocolVersion = 1;
+
         public MainWindowViewModel(IAudioBackend audioBackend)
         {
             this.AudioBackend = audioBackend;
@@ -119,11 +131,232 @@ namespace AudioSensei.ViewModels
             LoadPlaylists();
 
             timer.Tick += Tick;
+
+            ProcessStartupData();
         }
 
         ~MainWindowViewModel()
         {
             AudioBackend.Dispose();
+            Program.TriggerExit();
+        }
+
+        private void ProcessStartupData()
+        {
+            var cmd = Environment.GetCommandLineArgs().Skip(1).ToArray();
+
+            SetupPlaybackServer(cmd);
+
+            foreach (var s in cmd)
+            {
+                // TODO: fix
+                if (File.Exists(s))
+                {
+                    AudioBackend.PlayFile(s);
+                }
+            }
+        }
+
+        private void SetupPlaybackServer(string[] cmd)
+        {
+            // don't question locking a mutex, had to do it in order to stop VS from joining a satanistic cult of 666 and deadlocking
+            var mutexStatus = new ThreadLocal<bool>();
+            var tcpMutex = new Mutex(false, "AudioSenseiTcpSyncMutex");
+            var mutexLock = new object();
+
+            lock (mutexLock)
+            {
+                mutexStatus.Value = tcpMutex.WaitOne();
+            }
+
+            void ReleaseMutex()
+            {
+                lock (mutexLock)
+                {
+                    if (mutexStatus?.Value ?? false)
+                    {
+                        tcpMutex?.ReleaseMutex();
+                        mutexStatus.Value = false;
+                    }
+                }
+            }
+
+            Program.Exit += ReleaseMutex;
+
+            try
+            {
+                var lockPath = Path.Combine(App.ApplicationDataPath, "instancelock.txt");
+
+                if (File.Exists(lockPath) && ushort.TryParse(File.ReadAllText(lockPath), out var port) && SendPlaybackRequest(port, cmd))
+                {
+                    lock (mutexLock)
+                    {
+                        ReleaseMutex();
+
+                        Program.TriggerExit();
+                        Environment.Exit(0);
+                    }
+                }
+
+                try
+                {
+                    var tcp = new TcpListener(IPAddress.Loopback, 0);
+                    tcp.Start();
+                    ProcessTcp(tcp);
+                    var endPoint = (IPEndPoint)tcp.LocalEndpoint;
+                    File.WriteAllText(lockPath, endPoint.Port.ToString());
+                    Log.Information($"Listening to playback requests on {endPoint}");
+
+                    Program.Exit += () =>
+                    {
+                        lock (mutexLock)
+                        {
+                            if (!(mutexStatus?.Value ?? false))
+                            {
+                                mutexStatus.Value = tcpMutex.WaitOne();
+                            }
+
+                            Log.Information("Shutting down the playback server");
+                            File.Delete(lockPath);
+                            tcp.Stop();
+
+                            ReleaseMutex();
+
+                            mutexStatus.Dispose();
+                            mutexStatus = null;
+                            tcpMutex.Dispose();
+                            tcpMutex = null;
+                        }
+                    };
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to start the playback server!");
+                }
+            }
+            finally
+            {
+                ReleaseMutex();
+            }
+        }
+
+        private static bool SendPlaybackRequest(ushort port, string[] paths)
+        {
+            try
+            {
+                using (var client = new TcpClient())
+                {
+                    try
+                    {
+                        client.Connect(new IPEndPoint(IPAddress.Loopback, port));
+                        Log.Information($"Connected to a playback server on port {port}");
+                    }
+                    catch (SocketException se)
+                    {
+                        Log.Information(se, $"Failed to connect to a playback server on port {port}");
+                        return false;
+                    }
+                    using (var stream = client.GetStream())
+                    {
+                        int version = ProtocolVersion;
+                        Span<byte> intSpan = stackalloc byte[sizeof(int)];
+                        MemoryMarshal.Write(intSpan, ref version);
+                        stream.Write(intSpan);
+
+                        var pathCount = paths.Length;
+                        MemoryMarshal.Write(intSpan, ref pathCount);
+                        stream.Write(intSpan);
+
+                        var source = Source.File;
+                        Span<byte> sourceSpan = stackalloc byte[sizeof(Source)];
+                        MemoryMarshal.Write(sourceSpan, ref source);
+
+                        for (int i = 0; i < pathCount; i++)
+                        {
+                            var path = paths[i];
+                            var buffer = ArrayPool<byte>.Shared.Rent(Encoding.UTF8.GetMaxByteCount(path.Length));
+                            var length = Encoding.UTF8.GetBytes(path, 0, path.Length, buffer, 0);
+                            MemoryMarshal.Write(intSpan, ref length);
+                            stream.Write(intSpan);
+                            stream.Write(buffer, 0, length);
+                            stream.Write(sourceSpan);
+                            ArrayPool<byte>.Shared.Return(buffer);
+                        }
+                    }
+                }
+                Log.Information($"Send a request to a playback server on port {port}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, $"Failed to send data to a playback server on port {port}");
+                return false;
+            }
+        }
+
+        private async void ProcessTcp(TcpListener listener)
+        {
+            var intBuffer = new byte[sizeof(int)];
+            var sourceBuffer = new byte[sizeof(Source)];
+            while (true)
+            {
+                try
+                {
+                    using (var client = await listener.AcceptTcpClientAsync())
+                    {
+                        Log.Information($"Connection from {client.Client.RemoteEndPoint} received!");
+                        await using (var stream = client.GetStream())
+                        {
+                            await stream.ReadAsync(intBuffer);
+                            var version = MemoryMarshal.Read<int>(intBuffer);
+                            if (version != ProtocolVersion)
+                            {
+                                Log.Information($"Rejecting playback request with a different protocol version (local: {ProtocolVersion}, remote {version})");
+                                continue;
+                            }
+
+                            App.MainWindow.SetForegroundWindow();
+
+                            await stream.ReadAsync(intBuffer);
+                            var pathCount = MemoryMarshal.Read<int>(intBuffer);
+                            Log.Information($"Reading {pathCount} playback requests");
+
+                            for (int i = 0; i < pathCount; i++)
+                            {
+                                await stream.ReadAsync(intBuffer);
+                                var length = MemoryMarshal.Read<int>(intBuffer);
+                                var buffer = ArrayPool<byte>.Shared.Rent(length);
+                                await stream.ReadAsync(new Memory<byte>(buffer, 0, length));
+                                var path = Encoding.UTF8.GetString(buffer, 0, length);
+                                ArrayPool<byte>.Shared.Return(buffer);
+                                await stream.ReadAsync(sourceBuffer);
+                                var source = MemoryMarshal.Read<Source>(sourceBuffer);
+
+                                Log.Information($"Received a playback request for {path} from {source}");
+                                switch (source)
+                                {
+                                    // TODO: ass the path into some list
+                                    case Source.File when File.Exists(path):
+                                        AudioBackend.PlayFile(path);
+                                        break;
+                                    case Source.YouTube:
+                                        YoutubePlayer.Play(path);
+                                        break;
+                                    default:
+                                        Log.Warning($"Received invalid source ({source}) for playback from {path}");
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Receiving playback request failed");
+                }
+
+                await Task.Delay(10);
+            }
         }
 
         private void InitializeCommands()
@@ -252,7 +485,7 @@ namespace AudioSensei.ViewModels
 
             if (shuffle)
             {
-                CurrentTrackIndex = random.Next(0, currentlyPlayedPlaylist?.Tracks!.Count - 1);
+                CurrentTrackIndex = random.Next(0, currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0);
             }
             else if (CurrentTrackIndex > 0)
             {
@@ -260,7 +493,7 @@ namespace AudioSensei.ViewModels
             }
             else if (repeat)
             {
-                CurrentTrackIndex = currentlyPlayedPlaylist?.Tracks!.Count - 1;
+                CurrentTrackIndex = currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0;
             }
             else
             {
@@ -358,7 +591,7 @@ namespace AudioSensei.ViewModels
 
         private void Play(Track? track)
         {
-            if (track == null) 
+            if (track == null)
                 throw new ArgumentNullException(nameof(track));
 
             var previousVolume = AudioBackend.Volume;
@@ -376,7 +609,7 @@ namespace AudioSensei.ViewModels
 
             AudioBackend.Volume = previousVolume;
         }
-        
+
         private void Tick(object sender, EventArgs args)
         {
             if (!AudioBackend.IsInitialized)
