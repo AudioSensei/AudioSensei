@@ -495,6 +495,8 @@ namespace AudioSensei.ViewModels
                         case Source.File:
                             track.LoadMetadataFromFile();
                             break;
+                        case Source.YouTube:
+                        	break;
                         default:
                             throw new NotImplementedException();
                     }
@@ -537,8 +539,7 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-
-            if (currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
+            if (AudioStream != null && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
                 // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (AudioStream.Status)
@@ -620,6 +621,7 @@ namespace AudioSensei.ViewModels
                 throw new ArgumentNullException(nameof(track));
 
             await Play(track.Value);
+            timer.Start();
         }
 
         private async Task Next(bool repeat = true, bool shuffle = false)
@@ -657,6 +659,7 @@ namespace AudioSensei.ViewModels
                 throw new ArgumentNullException(nameof(track));
 
             await Play(track.Value);
+            timer.Start();
         }
 
         private void Shuffle()
@@ -723,6 +726,10 @@ namespace AudioSensei.ViewModels
 
         private async void Tick(object sender, EventArgs args)
         {
+        	this.RaisePropertyChanged(nameof(TotalTimeFormatted));
+        	this.RaisePropertyChanged(nameof(CurrentTimeFormatted));
+        	this.RaisePropertyChanged(nameof(Total));
+
             if (AudioStream.Status != AudioStreamStatus.Playing)
             {
                 return;
