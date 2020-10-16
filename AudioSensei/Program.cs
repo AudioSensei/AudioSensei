@@ -85,11 +85,6 @@ namespace AudioSensei
         [STAThread]
         public static int Main(string[] args)
         {
-            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            if (baseDirectory != null && Directory.Exists(baseDirectory) && Directory.Exists(Path.Combine(baseDirectory, "BassPlugins")))
-            {
-                Directory.SetCurrentDirectory(baseDirectory);
-            }
             try
             {
                 return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);

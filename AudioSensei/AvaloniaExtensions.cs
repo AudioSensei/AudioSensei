@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Serilog;
 
 namespace AudioSensei
@@ -15,47 +17,61 @@ namespace AudioSensei
                 return;
             }
 
-            if (window.WindowState == WindowState.Minimized)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                window.WindowState = WindowState.Normal;
+                DisplayWindow();
             }
-            window.Activate();
-            window.Focus();
+            else
+            {
+                Dispatcher.UIThread.Post(DisplayWindow);
+            }
+
+            void DisplayWindow()
+            {
+                if (window.WindowState == WindowState.Minimized)
+                {
+                    window.WindowState = WindowState.Normal;
+                }
+
+                window.Activate();
+                window.Focus();
 
 #if WINDOWS
-            IntPtr? handleNullable = window.PlatformImpl?.Handle?.Handle;
-            if (handleNullable == null)
-            {
-                return;
-            }
-            IntPtr handle = handleNullable.Value;
+                IntPtr? handleNullable = window.PlatformImpl?.Handle?.Handle;
+                if (handleNullable == null)
+                {
+                    return;
+                }
 
-            if (!IsWindow(handle))
-            {
-                Log.Warning("Invalid window handle!");
-                return;
-            }
+                IntPtr handle = handleNullable.Value;
 
-            if (IsIconic(handle) && !ShowWindowAsync(handle, 5))
-            {
-                Log.Warning("ShowWindowAsync failed!");
-            }
+                if (!IsWindow(handle))
+                {
+                    Log.Warning("Invalid window handle!");
+                    return;
+                }
 
-            if (SetActiveWindow(handle) == IntPtr.Zero)
-            {
-                Log.Warning(new Win32Exception(), "SetActiveWindow failed!");
-            }
+                if (IsIconic(handle) && !ShowWindowAsync(handle, 5))
+                {
+                    Log.Warning("ShowWindowAsync failed!");
+                }
 
-            if (!SetForegroundWindow(handle))
-            {
-                Log.Warning("SetForegroundWindow failed!");
-            }
+                if (SetActiveWindow(handle) == IntPtr.Zero)
+                {
+                    Log.Warning(new Win32Exception(), "SetActiveWindow failed!");
+                }
 
-            if (SetFocus(handle) == IntPtr.Zero)
-            {
-                Log.Warning(new Win32Exception(), "SetFocus failed!");
-            }
+                if (!SetForegroundWindow(handle))
+                {
+                    Log.Warning("SetForegroundWindow failed!");
+                }
+
+                if (SetFocus(handle) == IntPtr.Zero)
+                {
+                    Log.Warning(new Win32Exception(), "SetFocus failed!");
+                }
 #endif
+            }
         }
 
 #if WINDOWS

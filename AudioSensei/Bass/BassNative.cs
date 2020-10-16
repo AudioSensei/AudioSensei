@@ -54,7 +54,7 @@ namespace AudioSensei.Bass
                 const string filter = "*." + Arch + ".dylib";
 #endif
 
-                foreach (var file in Directory.EnumerateFiles("BassPlugins", filter, SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles(Directory.Exists("BassPlugins") ? "BassPlugins" : Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? "", "BassPlugins"), filter, SearchOption.AllDirectories))
                 {
                     var path = Path.GetFullPath(file);
                     var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
