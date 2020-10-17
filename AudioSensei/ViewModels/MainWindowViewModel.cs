@@ -576,7 +576,6 @@ namespace AudioSensei.ViewModels
                 throw new ArgumentNullException(nameof(track));
 
             await Play(track.Value);
-            timer.Start();
         }
 
         private void Stop()
@@ -621,7 +620,6 @@ namespace AudioSensei.ViewModels
                 throw new ArgumentNullException(nameof(track));
 
             await Play(track.Value);
-            timer.Start();
         }
 
         private async Task Next(bool repeat = true, bool shuffle = false)
@@ -659,7 +657,6 @@ namespace AudioSensei.ViewModels
                 throw new ArgumentNullException(nameof(track));
 
             await Play(track.Value);
-            timer.Start();
         }
 
         private void Shuffle()
@@ -722,6 +719,8 @@ namespace AudioSensei.ViewModels
                 Source.YouTube => (await YoutubePlayer.Play(track.Url)).AudioStream,
                 _ => throw new NotImplementedException()
             };
+
+            timer.Start();
         }
 
         private async void Tick(object sender, EventArgs args)
