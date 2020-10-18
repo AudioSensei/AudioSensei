@@ -7,6 +7,10 @@
     <PublishReadyToRun>true</PublishReadyToRun>
     <GenerateDocumentation>true</GenerateDocumentation>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <EmbedAllSources>true</EmbedAllSources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
     <DefineConstants>$(DefineConstants);NO_RID</DefineConstants>
@@ -79,4 +83,20 @@
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).so" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  
+  <Target Name="CopyReferenceFilesBuild" BeforeTargets="Build">
+    <ItemGroup>
+      <ReferenceFiles Include="%(Reference.RelativeDir)%(Reference.Filename).pdb" />
+    </ItemGroup>
+    <Message Text="Copying reference files to $(OutputPath)" Importance="High" />
+    <Copy SourceFiles="@(ReferenceFiles)" DestinationFolder="$(OutputPath)" Condition="Exists('%(RootDir)%(Directory)%(Filename)%(Extension)')" />
+  </Target>
+	
+  <Target Name="CopyReferenceFilesPublish" BeforeTargets="Publish">
+    <ItemGroup>
+      <ReferenceFiles Include="%(Reference.RelativeDir)%(Reference.Filename).pdb" />
+    </ItemGroup>
+    <Message Text="Copying reference files to $(PublishDir)" Importance="High" />
+    <Copy SourceFiles="@(ReferenceFiles)" DestinationFolder="$(PublishDir)" Condition="Exists('%(RootDir)%(Directory)%(Filename)%(Extension)')" />
+  </Target>
 </Project>

@@ -78,18 +78,33 @@ namespace AudioSensei
 
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
+                string message;
                 if (args.ExceptionObject is Exception ex)
                 {
-                    Log.Error(ex, $"Caught an unhandled {ex.GetType().Name} exception, {(args.IsTerminating ? "" : "not ")}terminating the program");
+                    message = $"Caught an unhandled {ex.GetType().Name} exception";
+                    if (args.IsTerminating)
+                    {
+                        Log.Fatal(ex, $"{message}, terminating the program");
+                        Program.TriggerExit();
+                    }
+                    else
+                    {
+                        Log.Error($"{message}, not terminating the program");
+                    }
                 }
                 else
                 {
-                    Log.Error($"Caught an unidentified unhandled exception, {(args.IsTerminating ? "" : "not ")}terminating the program");
-                }
+                    message = "Caught an unidentified unhandled exception";
 
-                if (args.IsTerminating)
-                {
-                    Program.TriggerExit();
+                    if (args.IsTerminating)
+                    {
+                        Log.Fatal($"{message}, terminating the program");
+                        Program.TriggerExit();
+                    }
+                    else
+                    {
+                        Log.Error($"{message}, not terminating the program");
+                    }
                 }
             };
 
