@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Serilog;
@@ -37,13 +36,11 @@ namespace AudioSensei
                 window.Focus();
 
 #if WINDOWS
-                IntPtr? handleNullable = window.PlatformImpl?.Handle?.Handle;
-                if (handleNullable == null)
+                IntPtr handle = window.PlatformImpl?.Handle?.Handle ?? IntPtr.Zero;
+                if (handle == IntPtr.Zero)
                 {
                     return;
                 }
-
-                IntPtr handle = handleNullable.Value;
 
                 if (!IsWindow(handle))
                 {

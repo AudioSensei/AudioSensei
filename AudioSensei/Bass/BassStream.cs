@@ -33,21 +33,20 @@ namespace AudioSensei.Bass
             }
         }
 
-        private bool _disposed;
+        private volatile bool _disposed;
+        private volatile bool _streamFreed;
 
         public StreamHandle Handle { get; }
         protected readonly BassChannelInfo Info;
         private readonly SyncHandle _restartSync;
         private readonly object _freeLock = new object();
 
+        private readonly BassNative.SyncProc _failProc;
+        private readonly BassNative.SyncProc _freeProc;
+
         internal BassStream(StreamHandle handle)
         {
-            if (handle == StreamHandle.Null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            if (BassNative.Singleton.GetChannelStatus(Handle) == ChannelStatus.Stopped && BassNative.GetLastErrorCode() != BassError.Ok)
+            if (!BassNative.Singleton.IsHandleValid(handle))
             {
                 throw new InvalidOperationException();
             }
@@ -57,15 +56,20 @@ namespace AudioSensei.Bass
 
             BassNative.Singleton.PlayChannel(Handle);
 
-            _restartSync = BassNative.Singleton.SetSync(handle, BassSync.DevFail, 0, (u, channel, data, user) => BassNative.Singleton.Restart(), IntPtr.Zero);
-            BassNative.Singleton.SetSync(handle, BassSync.Free, 0, (u, channel, data, user) =>
+            _failProc = (u, channel, data, user) => BassNative.Singleton.Restart();
+            _restartSync = BassNative.Singleton.SetSync(handle, BassSync.DevFail, 0, _failProc, IntPtr.Zero);
+
+            _freeProc = (u, channel, data, user) =>
             {
+                _streamFreed = true;
                 if (Monitor.TryEnter(_freeLock))
                 {
                     GC.SuppressFinalize(this);
                     _disposed = true;
+                    Monitor.Exit(_freeLock);
                 }
-            }, IntPtr.Zero);
+            };
+            BassNative.Singleton.SetSync(handle, BassSync.Free, 0, _freeProc, IntPtr.Zero);
         }
 
         public void Resume()
@@ -89,14 +93,18 @@ namespace AudioSensei.Bass
             try
             {
                 Monitor.Enter(temp, ref lockWasTaken);
-                if (_disposed || (BassNative.Singleton.GetChannelStatus(Handle) == ChannelStatus.Stopped && BassNative.GetLastErrorCode() != BassError.Ok))
+                if (_streamFreed || _disposed || !BassNative.Singleton.IsHandleValid(Handle))
                 {
                     return;
                 }
 
                 BassNative.Singleton.RemoveSync(Handle, _restartSync);
                 BassNative.Singleton.StopChannel(Handle);
-                BassNative.Singleton.FreeStream(Handle);
+                if (!_streamFreed)
+                {
+                    BassNative.Singleton.FreeStream(Handle);
+                    _streamFreed = true;
+                }
 
                 _disposed = true;
             }

@@ -74,7 +74,7 @@ namespace AudioSensei.Bass.Native
                     const string filter = "*." + Arch + ".dylib";
 #endif
 
-                    foreach (var file in Directory.EnumerateFiles("BassPlugins", filter, SearchOption.AllDirectories))
+                    foreach (var file in Directory.EnumerateFiles(Directory.Exists("BassPlugins") ? "BassPlugins" : Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? "", "BassPlugins"), filter, SearchOption.AllDirectories))
                     {
                         var path = Path.GetFullPath(file);
                         var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
@@ -592,6 +592,26 @@ namespace AudioSensei.Bass.Native
             {
                 throw new BassException("RemoveSync failed");
             }
+        }
+
+        public bool IsHandleValid(ChannelHandle handle)
+        {
+            return handle != ChannelHandle.Null && (GetChannelStatus(handle) != ChannelStatus.Stopped || GetLastErrorCode() == BassError.Ok);
+        }
+
+        public bool IsHandleValid(MusicHandle handle)
+        {
+            return handle != MusicHandle.Null && (GetChannelStatus(handle) != ChannelStatus.Stopped || GetLastErrorCode() == BassError.Ok);
+        }
+
+        public bool IsHandleValid(StreamHandle handle)
+        {
+            return handle != StreamHandle.Null && (GetChannelStatus(handle) != ChannelStatus.Stopped || GetLastErrorCode() == BassError.Ok);
+        }
+
+        public bool IsHandleValid(RecordHandle handle)
+        {
+            return handle != RecordHandle.Null && (GetChannelStatus(handle) != ChannelStatus.Stopped || GetLastErrorCode() == BassError.Ok);
         }
 
         [DllImport(Bass)]
