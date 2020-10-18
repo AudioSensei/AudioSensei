@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace AudioSensei.Bass
+namespace AudioSensei.Bass.Native
 {
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct BassPluginFormat

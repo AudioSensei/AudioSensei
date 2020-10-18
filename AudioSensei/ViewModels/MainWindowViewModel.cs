@@ -1,8 +1,4 @@
-﻿using AudioSensei.Models;
-using Avalonia.Threading;
-using Newtonsoft.Json;
-using ReactiveUI;
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,20 +7,20 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reactive;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AudioSensei.Crypto;
-using Avalonia;
+using AudioSensei.Models;
+using Avalonia.Threading;
+using ReactiveUI;
 using Serilog;
 
 namespace AudioSensei.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    public class MainWindowViewModel : ViewModelBase, IDisposable
     {
-        public IAudioBackend AudioBackend { get; }
-        public YoutubePlayer YoutubePlayer { get; }
-
         // Pages
         public int SelectedPageIndex
         {
@@ -83,6 +79,11 @@ namespace AudioSensei.ViewModels
         }
         public int CurrentTrackIndex { get; set; } = -1;
 
+        // Current Stream
+        public string CurrentTimeFormatted => AudioStream == null ? "00:00" : AudioStream.CurrentTime.ToPlaybackPosition();
+        public string TotalTimeFormatted => AudioStream == null ? "00:00" : AudioStream.TotalTime.ToPlaybackPosition();
+        public double Total => AudioStream == null ? 0 : (AudioStream.CurrentTime / AudioStream.TotalTime * 100);
+
         // Commands
         public ReactiveCommand<Unit, Unit> PlayOrPauseCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> StopCommand { get; private set; }
@@ -98,8 +99,15 @@ namespace AudioSensei.ViewModels
         public ReactiveCommand<Unit, Unit> CancelPlaylistCreationCommand { get; private set; }
         public ReactiveCommand<Guid, Unit> SelectPlaylistCommand { get; private set; }
 
+        public IAudioBackend AudioBackend { get; }
+        public YoutubePlayer YoutubePlayer { get; }
+
+        public IAudioStream AudioStream { get; private set; }
+
         private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
-        private readonly Random random = new Random();
+        private readonly Random random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
+
+        private bool _disposed;
 
         private bool repeat;
         private bool shuffle;
@@ -129,7 +137,10 @@ namespace AudioSensei.ViewModels
         public MainWindowViewModel(IAudioBackend audioBackend)
         {
             _typeHash = FowlerNollVo1A.GetHash(GetType().FullName);
-            this.AudioBackend = audioBackend;
+
+            Program.Exit += Dispose;
+
+            AudioBackend = audioBackend;
             YoutubePlayer = new YoutubePlayer(audioBackend);
 
             InitializeCommands();
@@ -140,9 +151,27 @@ namespace AudioSensei.ViewModels
             ProcessStartupData();
         }
 
+        private void Free()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            AudioStream?.Dispose();
+            AudioStream = null;
+            AudioBackend.Dispose();
+        }
+
+        public void Dispose()
+        {
+            Free();
+            GC.SuppressFinalize(this);
+        }
+
         ~MainWindowViewModel()
         {
-            AudioBackend.Dispose();
+            Free();
             Program.TriggerExit();
         }
 
@@ -157,7 +186,7 @@ namespace AudioSensei.ViewModels
                 // TODO: fix
                 if (File.Exists(s))
                 {
-                    AudioBackend.PlayFile(s);
+                    Play(Track.CreateFromFile(s));
                 }
             }
         }
@@ -416,10 +445,10 @@ namespace AudioSensei.ViewModels
                         {
                             // TODO: ass the path into some list
                             case Source.File when File.Exists(path):
-                                AudioBackend.PlayFile(path);
+                                await Play(Track.CreateFromFile(path));
                                 break;
                             case Source.YouTube:
-                                YoutubePlayer.Play(path);
+                                await Play(new Track(source, path));
                                 break;
                             default:
                                 Log.Warning($"Received invalid source ({source}) for playback from {path}");
@@ -444,10 +473,10 @@ namespace AudioSensei.ViewModels
 
         private void InitializeCommands()
         {
-            PlayOrPauseCommand = ReactiveCommand.Create(PlayOrPause);
+            PlayOrPauseCommand = ReactiveCommand.CreateFromTask(PlayOrPause);
             StopCommand = ReactiveCommand.Create(Stop);
-            NextCommand = ReactiveCommand.Create(() => Next(repeat, shuffle));
-            PreviousCommand = ReactiveCommand.Create(() => Previous(repeat, shuffle));
+            NextCommand = ReactiveCommand.CreateFromTask(async () => await Next(repeat, shuffle));
+            PreviousCommand = ReactiveCommand.CreateFromTask(async () => await Previous(repeat, shuffle));
             RepeatCommand = ReactiveCommand.Create(Repeat);
             ShuffleCommand = ReactiveCommand.Create(Shuffle);
             AllTracksCommand = ReactiveCommand.Create(() => { SelectedPageIndex = 0; });
@@ -480,6 +509,10 @@ namespace AudioSensei.ViewModels
                         case Source.File:
                             track.LoadMetadataFromFile();
                             break;
+                        case Source.YouTube:
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
 
                     playlist.Tracks[i] = track;
@@ -494,7 +527,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        private void PlayOrPause()
+        private async Task PlayOrPause()
         {
             currentlyPlayedPlaylist ??= currentlyVisiblePlaylist;
 
@@ -520,18 +553,34 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-            if (AudioBackend.IsPlaying && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
+            if (AudioStream != null && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
-                AudioBackend.Pause();
-                timer.Stop();
-                return;
-            }
-
-            if (AudioBackend.IsPaused && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
-            {
-                AudioBackend.Resume();
-                timer.Start();
-                return;
+                // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+                switch (AudioStream.Status)
+                {
+                    case AudioStreamStatus.Playing:
+                        AudioStream.Pause();
+                        if (Dispatcher.UIThread.CheckAccess())
+                        {
+                            timer.Stop();
+                        }
+                        else
+                        {
+                            await Dispatcher.UIThread.InvokeAsync(timer.Stop);
+                        }
+                        return;
+                    case AudioStreamStatus.Paused:
+                        AudioStream.Resume();
+                        if (Dispatcher.UIThread.CheckAccess())
+                        {
+                            timer.Start();
+                        }
+                        else
+                        {
+                            await Dispatcher.UIThread.InvokeAsync(timer.Start);
+                        }
+                        return;
+                }
             }
 
             if (currentlyPlayedPlaylist != currentlyVisiblePlaylist)
@@ -549,17 +598,29 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-            Play(currentlyPlayedPlaylist?.Tracks[CurrentTrackIndex]);
-            timer.Start();
+            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
+
+            await Play(track.Value);
         }
 
         private void Stop()
         {
-            AudioBackend.Stop();
-            timer.Stop();
+            AudioStream?.Dispose();
+            AudioStream = null;
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                timer.Stop();
+            }
+            else
+            {
+                Dispatcher.UIThread.Post(timer.Stop);
+            }
         }
 
-        private void Previous(bool repeat = true, bool shuffle = false)
+        private async Task Previous(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
             {
@@ -588,10 +649,15 @@ namespace AudioSensei.ViewModels
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            Play(currentlyPlayedPlaylist?.Tracks[CurrentTrackIndex]);
+            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
+
+            await Play(track.Value);
         }
 
-        private void Next(bool repeat = true, bool shuffle = false)
+        private async Task Next(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
             {
@@ -620,7 +686,12 @@ namespace AudioSensei.ViewModels
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            Play(currentlyPlayedPlaylist?.Tracks[CurrentTrackIndex]);
+            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
+
+            await Play(track.Value);
         }
 
         private void Shuffle()
@@ -672,37 +743,42 @@ namespace AudioSensei.ViewModels
             CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
         }
 
-        private void Play(Track? track)
+        private async Task Play(Track track)
         {
-            if (track == null)
-                throw new ArgumentNullException(nameof(track));
+            AudioStream?.Dispose();
+            AudioStream = null;
 
-            var previousVolume = AudioBackend.Volume;
-
-            switch (track?.Source)
+            AudioStream = track.Source switch
             {
-                case Source.File:
-                    AudioBackend.PlayFile(track?.Url);
-                    break;
-                case Source.YouTube:
-                    // TODO: await this
-                    YoutubePlayer.Play(track?.Url);
-                    break;
-            }
+                Source.File => AudioBackend.Play(new Uri(track.Url)),
+                Source.YouTube => (await YoutubePlayer.Play(track.Url)).AudioStream,
+                _ => throw new NotImplementedException()
+            };
 
-            AudioBackend.Volume = previousVolume;
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                timer.Start();
+            }
+            else
+            {
+                await Dispatcher.UIThread.InvokeAsync(timer.Start);
+            }
         }
 
-        private void Tick(object sender, EventArgs args)
+        private async void Tick(object sender, EventArgs args)
         {
-            if (!AudioBackend.IsInitialized)
+            this.RaisePropertyChanged(nameof(TotalTimeFormatted));
+            this.RaisePropertyChanged(nameof(CurrentTimeFormatted));
+            this.RaisePropertyChanged(nameof(Total));
+
+            if (AudioStream == null || AudioStream.Status != AudioStreamStatus.Playing)
             {
                 return;
             }
 
-            if (AudioBackend.TotalTime - AudioBackend.CurrentTime < TimeSpan.FromSeconds(0.5))
+            if (AudioStream.TotalTime - AudioStream.CurrentTime < TimeSpan.FromSeconds(0.5))
             {
-                Next();
+                await Next();
             }
         }
     }

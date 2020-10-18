@@ -36,7 +36,7 @@ namespace AudioSensei.Models
         private string _author;
 
         [JsonConstructor]
-        public Track(string author, Source source, string url)
+        public Track(Source source, string url)
         {
             _name = null;
             _author = null;
@@ -46,12 +46,12 @@ namespace AudioSensei.Models
             PropertyChanged = null;
 
             Name = "";
-            Author = author;
+            Author = "";
         }
 
         public static Track CreateFromFile(string filePath)
         {
-            var track = new Track("", Source.File, filePath);
+            var track = new Track(Source.File, filePath);
             track.LoadMetadataFromFile();
             return track;
         }
@@ -87,7 +87,7 @@ namespace AudioSensei.Models
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Author, (int) Source, Url);
+            return HashCode.Combine(Name, Author, (int)Source, Url);
         }
 
         public static bool operator ==(Track left, Track right)

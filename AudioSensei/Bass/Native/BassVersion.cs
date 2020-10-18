@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace AudioSensei.Bass
+namespace AudioSensei.Bass.Native
 {
     [StructLayout(LayoutKind.Explicit, Size = sizeof(uint))]
     internal readonly struct BassVersion

@@ -37,7 +37,7 @@ namespace AudioSensei.Views
                 {
                     foreach (var fileName in dragEventArgs.Data.GetFileNames())
                     {
-                        var track = new Track("", Source.File, fileName);
+                        var track = new Track(Source.File, fileName);
                         track.LoadMetadataFromFile();
                         dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
                         dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
@@ -54,7 +54,7 @@ namespace AudioSensei.Views
 
                     if (domain.Equals("youtube", StringComparison.CurrentCultureIgnoreCase) || domain.Equals("youtu", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        var track = new Track("", Source.YouTube, dragEventArgs.Data.GetText());
+                        var track = new Track(Source.YouTube, dragEventArgs.Data.GetText());
                         dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
                         dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                     }
