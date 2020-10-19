@@ -1,0 +1,18 @@
+{
+    "Name":"BASSWV",
+    "Library":{
+        "windows":{
+            "x86":"basswv.X86.dll",
+            "x64":"basswv.X64.dll"
+        },
+        "linux":{
+            "x86":"libbasswv.X86.so",
+            "x64":"libbasswv.X64.so",
+            "arm":"libbasswv.ARM.so",
+            "arm64":"libbasswv.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbasswv.X64.dylib"
+        }
+    }
+}

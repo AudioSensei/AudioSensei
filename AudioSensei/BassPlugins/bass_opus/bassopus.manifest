@@ -1,0 +1,18 @@
+{
+    "Name":"BASSOPUS",
+    "Library":{
+        "windows":{
+            "x86":"bassopus.X86.dll",
+            "x64":"bassopus.X64.dll"
+        },
+        "linux":{
+            "x86":"libbassopus.X86.so",
+            "x64":"libbassopus.X64.so",
+            "arm":"libbassopus.ARM.so",
+            "arm64":"libbassopus.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbassopus.X64.dylib"
+        }
+    }
+}

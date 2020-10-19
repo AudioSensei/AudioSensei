@@ -1,0 +1,17 @@
+{
+    "Name":"BASS_APE",
+    "Library":{
+        "windows":{
+            "x86":"bass_ape.X86.dll",
+            "x64":"bass_ape.X64.dll"
+        },
+        "linux":{
+            "x86":"libbass_ape.X86.so",
+            "x64":"libbass_ape.X64.so",
+            "arm":"libbass_ape.ARM.so"
+        },
+        "osx":{
+            "x64":"libbass_ape.X64.dylib"
+        }
+    }
+}
