@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AudioSensei.Crypto;
+using AudioSensei.Crypto.Crc32C;
 using AudioSensei.Models;
 using Avalonia.Threading;
 using ReactiveUI;
