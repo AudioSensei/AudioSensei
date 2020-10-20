@@ -1,0 +1,15 @@
+{
+    "Name":"BASS_AAC",
+    "Library":{
+        "windows":{
+            "x86":"bass_aac.X86.dll",
+            "x64":"bass_aac.X64.dll"
+        },
+        "linux":{
+            "x86":"libbass_aac.X86.dll",
+            "x64":"libbass_aac.X64.dll",
+            "arm":"libbass_aac.ARM.dll",
+            "arm64":"libbass_aac.ARM64.dll"
+        }
+    }
+}

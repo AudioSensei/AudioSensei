@@ -1,0 +1,18 @@
+{
+    "Name":"BASSDSD",
+    "Library":{
+        "windows":{
+            "x86":"bassdsd.X86.dll",
+            "x64":"bassdsd.X64.dll"
+        },
+        "linux":{
+            "x86":"libbassdsd.X86.so",
+            "x64":"libbassdsd.X64.so",
+            "arm":"libbassdsd.ARM.so",
+            "arm64":"libbassdsd.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbassdsd.X64.dylib"
+        }
+    }
+}

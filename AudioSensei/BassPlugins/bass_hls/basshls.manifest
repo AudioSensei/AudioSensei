@@ -1,0 +1,18 @@
+{
+    "Name":"BASSHLS",
+    "Library":{
+        "windows":{
+            "x86":"basshls.X86.dll",
+            "x64":"basshls.X64.dll"
+        },
+        "linux":{
+            "x86":"libbasshls.X86.so",
+            "x64":"libbasshls.X64.so",
+            "arm":"libbasshls.ARM.so",
+            "arm64":"libbasshls.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbasshls.X64.dylib"
+        }
+    }
+}

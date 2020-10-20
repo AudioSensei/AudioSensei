@@ -1,0 +1,18 @@
+{
+    "Name":"BASSWEBM",
+    "Library":{
+        "windows":{
+            "x86":"basswebm.X86.dll",
+            "x64":"basswebm.X64.dll"
+        },
+        "linux":{
+            "x86":"libbasswebm.X86.so",
+            "x64":"libbasswebm.X64.so",
+            "arm":"libbasswebm.ARM.so",
+            "arm64":"libbasswebm.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbasswebm.X64.dylib"
+        }
+    }
+}

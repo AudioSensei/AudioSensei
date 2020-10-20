@@ -1,0 +1,18 @@
+{
+    "Name":"BASSFLAC",
+    "Library":{
+        "windows":{
+            "x86":"bassflac.X86.dll",
+            "x64":"bassflac.X64.dll"
+        },
+        "linux":{
+            "x86":"libbassflac.X86.so",
+            "x64":"libbassflac.X64.so",
+            "arm":"libbassflac.ARM.so",
+            "arm64":"libbassflac.ARM64.so"
+        },
+        "osx":{
+            "x64":"libbassflac.X64.dylib"
+        }
+    }
+}

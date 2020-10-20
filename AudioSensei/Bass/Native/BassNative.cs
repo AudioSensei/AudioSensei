@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using AudioSensei.Bass.Native.Handles;
@@ -34,6 +36,7 @@ namespace AudioSensei.Bass.Native
         public static BassNative Singleton { get; private set; }
         private static bool _invalidState;
 
+        public readonly ConcurrentDictionary<PluginHandle, (BassPluginManifest manifest, BassPluginInfo info)> Plugins;
         private readonly int _device;
         private readonly uint _frequency;
         private readonly BassInitFlags _flags;
@@ -66,17 +69,41 @@ namespace AudioSensei.Bass.Native
 
                     Log.Information($"Loading Bass version {BASS_GetVersion()}");
 
+                    const string filter = "*.manifest";
+
+                    Plugins = new ConcurrentDictionary<PluginHandle, (BassPluginManifest, BassPluginInfo)>();
+                    foreach (var file in Directory.EnumerateFiles(
+                        Directory.Exists("BassPlugins")
+                            ? "BassPlugins"
+                            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? "", "BassPlugins"), filter,
+                        SearchOption.AllDirectories))
+                    {
+                        var manifest = BassPluginManifest.Load(file);
+
 #if WINDOWS
-                    const string filter = "*." + Arch + ".dll";
+                        const string os = "windows";
 #elif LINUX
-                    const string filter = "*." + Arch + ".so";
+                        const string os = "linux";
 #elif OSX
-                    const string filter = "*." + Arch + ".dylib";
+                        const string os = "osx";
 #endif
 
-                    foreach (var file in Directory.EnumerateFiles(Directory.Exists("BassPlugins") ? "BassPlugins" : Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? "", "BassPlugins"), filter, SearchOption.AllDirectories))
-                    {
-                        var path = Path.GetFullPath(file);
+                        var osDict = new Dictionary<string, Dictionary<string, string>>(manifest.Library, StringComparer.OrdinalIgnoreCase);
+                        if (!osDict.TryGetValue(os, out var aDictTemp))
+                        {
+                            Log.Information($"Skipping loading {manifest.Name} due to unsupported OS");
+                            continue;
+                        }
+
+                        var archDict = new Dictionary<string, string>(aDictTemp, StringComparer.OrdinalIgnoreCase);
+                        if (!archDict.TryGetValue(Arch, out var library))
+                        {
+                            Log.Information($"Skipping loading {manifest.Name} due to unsupported architecture");
+                            continue;
+                        }
+
+                        var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file) ?? string.Empty, library));
+
                         var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
                         if (handle == PluginHandle.Null)
                             throw new BassException($"Loading {path} as plugin failed");
@@ -84,7 +111,8 @@ namespace AudioSensei.Bass.Native
                         if (infoPtr == null)
                             throw new BassException($"Getting plugin info for {path} failed");
                         var info = *infoPtr;
-                        Log.Information($"Loaded Bass plugin {Path.GetFileNameWithoutExtension(path)} version {info.version}. Supported formats: {string.Join(", ", info.ListSupportedFormats())}");
+                        Log.Information($"Loaded Bass plugin {manifest.Name} from {path} version {info.version}. Supported formats: {string.Join(", ", info.ListSupportedFormats())}");
+                        Plugins[handle] = (manifest, info);
                     }
 
 #if WINDOWS

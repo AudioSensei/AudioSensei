@@ -1,0 +1,9 @@
+{
+    "Name":"BASSCD",
+    "Library":{
+        "windows":{
+            "x86":"basscd.X86.dll",
+            "x64":"basscd.X64.dll"
+        }
+    }
+}
