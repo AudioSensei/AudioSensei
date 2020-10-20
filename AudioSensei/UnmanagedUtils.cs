@@ -23,6 +23,11 @@ namespace AudioSensei
             loword = (ushort)value;
         }
 
+        public static uint MakeLong(ushort hiword, ushort loword)
+        {
+            return (uint)(hiword << (sizeof(ushort) * 8)) | loword;
+        }
+
         public static void HiLoByte(ushort value, out byte hibyte, out byte lobyte)
         {
             hibyte = (byte)(value >> sizeof(byte) * 8);

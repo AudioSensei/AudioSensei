@@ -9,26 +9,28 @@ namespace AudioSensei
     internal static class WebHelper
     {
         [NotNull]
-        public static readonly string UserAgent = @"Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0";
+        public static readonly string UserAgent = $@"AudioSensei/{Program.Version} (https://github.com/KernelErr0r/AudioSensei)";
+        [NotNull]
+        public static readonly string FakeUserAgent = @"Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0";
 
         static WebHelper()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                UserAgent = @$"Mozilla/5.0 (Windows NT {Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}; Win{(Environment.Is64BitOperatingSystem ? "64" : "32")}; {(Environment.Is64BitProcess ? "x64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                FakeUserAgent = @$"Mozilla/5.0 (Windows NT {Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}; Win{(Environment.Is64BitOperatingSystem ? "64" : "32")}; {(Environment.Is64BitProcess ? "x64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                UserAgent = @$"Mozilla/5.0 (X11; Ubuntu; Linux {(Environment.Is64BitProcess ? "x86_64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                FakeUserAgent = @$"Mozilla/5.0 (X11; Ubuntu; Linux {(Environment.Is64BitProcess ? "x86_64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                UserAgent = @$"Mozilla/5.0 (Macintosh; Intel Mac OS X {ConvertDarwinVersionToMacOsVersion($"{Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                FakeUserAgent = @$"Mozilla/5.0 (Macintosh; Intel Mac OS X {ConvertDarwinVersionToMacOsVersion($"{Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}")}; rv:81.0) Gecko/20100101 Firefox/81.0";
             }
         }
 
         [NotNull]
-        public static HttpClient CreateHttpClient()
+        public static HttpClient CreateHttpClient(bool fakeUserAgent)
         {
             var c = new HttpClient(new SocketsHttpHandler
             {
@@ -36,7 +38,7 @@ namespace AudioSensei
                 AutomaticDecompression = DecompressionMethods.All
             });
             c.DefaultRequestHeaders.UserAgent.Clear();
-            c.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+            c.DefaultRequestHeaders.UserAgent.ParseAdd(fakeUserAgent ? FakeUserAgent : UserAgent);
             return c;
         }
 

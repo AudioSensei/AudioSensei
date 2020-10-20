@@ -12,6 +12,11 @@
     <DebugSymbols>true</DebugSymbols>
     <EmbedAllSources>true</EmbedAllSources>
   </PropertyGroup>
+  <PropertyGroup>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
     <DefineConstants>$(DefineConstants);NO_RID</DefineConstants>
     <TargetOs Condition="$([MSBuild]::IsOSPlatform('Windows'))">WINDOWS</TargetOs>

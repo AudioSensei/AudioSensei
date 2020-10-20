@@ -16,7 +16,7 @@ namespace AudioSensei
 
         public YoutubePlayer(IAudioBackend backend)
         {
-            _client = new YoutubeClient(WebHelper.CreateHttpClient());
+            _client = new YoutubeClient(WebHelper.CreateHttpClient(true));
             _backend = backend;
         }
 

@@ -1,4 +1,5 @@
 ﻿using AudioSensei.Bass;
+using AudioSensei.Bass.Native;
 using Serilog;
 using Serilog.Events;
 using Xunit;
@@ -12,7 +13,7 @@ namespace AudioSensei.Tests
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.TestOutput(output, LogEventLevel.Verbose)
+                .WriteTo.TestOutput(output)
                 .CreateLogger()
                 .ForContext<BassTests>();
         }
@@ -20,42 +21,52 @@ namespace AudioSensei.Tests
         [Fact]
         public void TestInitialization()
         {
-            BassNative.Initialize();
-            BassNative.Free();
+            // ReSharper disable once UnusedVariable
+            using (var bass = new BassNative())
+            {
+            }
         }
 
-        [Fact]
-        public void TestPlayback()
+        [Theory]
+        [InlineData("test.wav")]
+        public void TestPlayback(string path)
         {
-            BassNative.Initialize();
-            
-            var handle = BassNative.CreateStreamFromFile("test.wav");
-            handle.PlayChannel();
-            Assert.NotEqual(handle, BassHandle.Null);
-            Assert.Equal(ChannelStatus.Playing, handle.GetChannelStatus());
+            // ReSharper disable once UnusedVariable
+            using (var bass = new BassNative())
+            {
+                using (var stream = new BassFileStream(path))
+                {
+                    Assert.NotNull(stream);
+                    Assert.NotEqual(Bass.Native.Handles.StreamHandle.Null, stream.Handle);
 
-            handle.PauseChannel();
-            Assert.Equal(ChannelStatus.Paused, handle.GetChannelStatus());
-            
-            handle.StopChannel();
-            Assert.Equal(ChannelStatus.Stopped, handle.GetChannelStatus());
-            
-            BassNative.Free();
+                    stream.Pause();
+                    Assert.Equal(AudioStreamStatus.Paused, stream.Status);
+
+                    stream.Resume();
+                    Assert.Equal(AudioStreamStatus.Playing, stream.Status);
+
+                    stream.Dispose();
+                    Assert.Equal(AudioStreamStatus.Invalid, stream.Status);
+                }
+            }
         }
 
-        [Fact]
-        public void TestChannelAttributes()
+        [Theory]
+        [InlineData("test.wav")]
+        public void TestChannelAttributes(string path)
         {
-            BassNative.Initialize();
-            
-            var handle = BassNative.CreateStreamFromFile("test.wav");
-            handle.PlayChannel();
+            using (var bass = new BassNative())
+            {
+                using (var stream = new BassFileStream(path))
+                {
+                    Assert.NotNull(stream);
+                    Assert.NotEqual(Bass.Native.Handles.StreamHandle.Null, stream.Handle);
 
-            handle.SetChannelAttribute(ChannelAttribute.VolumeLevel, 0.5f);
-            Assert.Equal(0.5f, handle.GetChannelAttribute(ChannelAttribute.VolumeLevel));
-            
-            handle.StopChannel();
-            BassNative.Free();
+                    const float vol = 0.5f;
+                    bass.SetChannelAttribute(stream.Handle, ChannelAttribute.VolumeLevel, vol);
+                    Assert.Equal(vol, bass.GetChannelAttribute(stream.Handle, ChannelAttribute.VolumeLevel));
+                }
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
-using System.Threading;
+using System.Reflection;
+using AudioSensei;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
@@ -23,10 +23,17 @@ using Serilog;
 #error Target doesn't support a library!
 #endif
 
+[assembly: AssemblyInformationalVersion(Program.VersionConst)]
+[assembly: AssemblyFileVersion(Program.VersionConst)]
+[assembly: AssemblyVersion(Program.VersionConst)]
+
 namespace AudioSensei
 {
-    class Program
+    static class Program
     {
+        internal const string VersionConst = "0.0.1";
+        public static string Version => VersionConst;
+
         [CanBeNull]
         public static event Action Exit;
 
