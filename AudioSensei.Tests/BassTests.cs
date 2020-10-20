@@ -1,7 +1,6 @@
 ﻿using AudioSensei.Bass;
 using AudioSensei.Bass.Native;
 using Serilog;
-using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +21,7 @@ namespace AudioSensei.Tests
         public void TestInitialization()
         {
             // ReSharper disable once UnusedVariable
-            using (var bass = new BassNative())
+            using (var bass = new BassNative(0))
             {
             }
         }
@@ -32,7 +31,7 @@ namespace AudioSensei.Tests
         public void TestPlayback(string path)
         {
             // ReSharper disable once UnusedVariable
-            using (var bass = new BassNative())
+            using (var bass = new BassNative(0))
             {
                 using (var stream = new BassFileStream(path))
                 {
@@ -55,7 +54,7 @@ namespace AudioSensei.Tests
         [InlineData("test.wav")]
         public void TestChannelAttributes(string path)
         {
-            using (var bass = new BassNative())
+            using (var bass = new BassNative(0))
             {
                 using (var stream = new BassFileStream(path))
                 {

@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AudioSensei", "AudioSensei\AudioSensei.csproj", "{BA476B0C-E9E3-4E7E-8148-553CD26AA27A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioSensei.Tests", "AudioSensei.Tests\AudioSensei.Tests.csproj", "{612FDBE7-21FD-4A23-9A97-5641C2A1186E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AudioSensei.Tests", "AudioSensei.Tests\AudioSensei.Tests.csproj", "{612FDBE7-21FD-4A23-9A97-5641C2A1186E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{639E2389-359D-4175-B656-769773F358E4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
