@@ -153,8 +153,8 @@ namespace AudioSensei.Bass.Native
                     }
 
 
-                    Log.Information($"Setting useragent to {WebHelper.UserAgent}");
-                    BASS_SetConfigPtr(BassConfig.NetAgent, WebHelper.UserAgent);
+                    Log.Information($"Setting useragent to {WebHelper.FakeUserAgent}");
+                    BASS_SetConfigPtr(BassConfig.NetAgent, WebHelper.FakeUserAgent);
 
                     Log.Information("Bass initialization complete");
 
@@ -175,10 +175,11 @@ namespace AudioSensei.Bass.Native
         private static extern IntPtr GetActiveWindow();
 #endif
 
-        private static void Free()
+        private void Free()
         {
             lock (LoadLock)
             {
+                Plugins.Clear();
                 BASS_PluginFree(PluginHandle.Null);
                 if (!BASS_Free())
                 {
