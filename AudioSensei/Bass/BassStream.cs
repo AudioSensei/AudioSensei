@@ -2,6 +2,7 @@
 using System.Threading;
 using AudioSensei.Bass.Native;
 using AudioSensei.Bass.Native.Handles;
+using Serilog;
 
 namespace AudioSensei.Bass
 {
@@ -53,6 +54,10 @@ namespace AudioSensei.Bass
 
             Handle = handle;
             Info = BassNative.Singleton.GetChannelInfo(Handle);
+            if (Info.plugin != PluginHandle.Null && BassNative.Singleton.Plugins.TryGetValue(Info.plugin, out var value))
+            {
+                Log.Information($"Using bass plugin {value.manifest.Name} version {value.info.version} to play {Info.FileName}");
+            }
 
             BassNative.Singleton.PlayChannel(Handle);
 
@@ -88,6 +93,8 @@ namespace AudioSensei.Bass
 
         private void FreeStream()
         {
+            if (Handle == StreamHandle.Null)
+                return;
             var lockWasTaken = false;
             var temp = _freeLock;
             try

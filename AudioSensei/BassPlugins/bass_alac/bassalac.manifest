@@ -1,0 +1,15 @@
+{
+    "Name":"BASSALAC",
+    "Library":{
+        "windows":{
+            "x86":"bassalac.X86.dll",
+            "x64":"bassalac.X64.dll"
+        },
+        "linux":{
+            "x86":"libbassalac.X86.so",
+            "x64":"libbassalac.X64.so",
+            "arm":"libbassalac.ARM.so",
+            "arm64":"libbassalac.ARM64.so"
+        }
+    }
+}

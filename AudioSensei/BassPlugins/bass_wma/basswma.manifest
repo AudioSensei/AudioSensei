@@ -1,0 +1,9 @@
+{
+    "Name":"BASSWMA",
+    "Library":{
+        "windows":{
+            "x86":"basswma.X86.dll",
+            "x64":"basswma.X64.dll"
+        }
+    }
+}
