@@ -109,7 +109,7 @@ namespace AudioSensei.Bass.Native
 
                         if (!File.Exists(path))
                         {
-                            throw new FileNotFoundException("Couldn't load bass plugin", path);
+                            throw new FileNotFoundException($"Couldn't load bass plugin from {path}", path);
                         }
 
                         var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
