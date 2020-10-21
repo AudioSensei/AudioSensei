@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using AudioSensei.Models;
 using AudioSensei.ViewModels;
 using Avalonia;
@@ -51,9 +52,15 @@ namespace AudioSensei.Views
 
                     if (domain.Equals("youtube", StringComparison.CurrentCultureIgnoreCase) || domain.Equals("youtu", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        var track = new Track(Source.YouTube, dragEventArgs.Data.GetText());
-                        dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
-                        dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
+                        Task.Run(async () =>
+                        {
+                            var track = new Track(Source.YouTube, dragEventArgs.Data.GetText());
+                            var info = await dataContext.YoutubePlayer.GetInfo(track.Url);
+                            track.Name = info.Video.Title;
+                            track.Author = info.Video.Author;
+                            dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
+                            dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
+                        });
                     }
                 }
                 catch
