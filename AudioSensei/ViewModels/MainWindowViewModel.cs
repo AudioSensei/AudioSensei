@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AudioSensei.Bass.BassCd;
 using AudioSensei.Crypto;
 using AudioSensei.Models;
 using Avalonia.Threading;
@@ -149,6 +150,13 @@ namespace AudioSensei.ViewModels
             timer.Tick += Tick;
 
             ProcessStartupData();
+            var b1 = BassCdNative.TryGetCdPlayer(new DriveHandle(0), out var cdplayer);
+            var b2 = BassCdNative.TryGetCdText(new DriveHandle(0), out var cdtext);
+            var b3 = BassCdNative.TryGetIsrc(new DriveHandle(0), 0, out var isrc);
+            var b4 = BassCdNative.TryGetMusicbrainz(new DriveHandle(0), out var musicbrainz);
+            var b5 = BassCdNative.TryGetUpc(new DriveHandle(0), out var upc);
+            var b6 = BassCdNative.TryGetCddb(new DriveHandle(0), out var cddb);
+            var b7 = BassCdNative.TryGetCddb2(new DriveHandle(0), out var cddb2);
         }
 
         private void Free()

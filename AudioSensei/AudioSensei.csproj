@@ -72,8 +72,15 @@
     <BassTargetPath Condition="'$(TargetOs)' == 'OSX'">libbass.dylib</BassTargetPath>
     <DefineConstants Condition="!Exists('$(BassSourcePath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup>
+    <BassCdSourcePath Condition="'$(TargetOs)' == 'WINDOWS'">basscd.$(TargetArch).dll</BassCdSourcePath>
+    <BassCdSourcePath Condition="'$(TargetOs)' == 'LINUX'">libbasscd.$(TargetArch).so</BassCdSourcePath>
+    <BassCdTargetPath Condition="'$(TargetOs)' == 'WINDOWS'">basscd.dll</BassCdTargetPath>
+    <BassCdTargetPath Condition="'$(TargetOs)' == 'LINUX'">libbasscd.so</BassCdTargetPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Update="$(BassSourcePath)" Link="$(BassTargetPath)" CopyToOutputDirectory="Always" />
+    <None Update="$(BassCdSourcePath)" Link="$(BassCdTargetPath)" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />

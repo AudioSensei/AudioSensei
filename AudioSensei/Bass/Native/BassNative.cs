@@ -104,6 +104,11 @@ namespace AudioSensei.Bass.Native
 
                         var path = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file) ?? string.Empty, library));
 
+                        if (!File.Exists(path))
+                        {
+                            throw new FileNotFoundException($"Could not load Bass plugin from {path}", path);
+                        }
+
                         var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
                         if (handle == PluginHandle.Null)
                             throw new BassException($"Loading {path} as plugin failed");

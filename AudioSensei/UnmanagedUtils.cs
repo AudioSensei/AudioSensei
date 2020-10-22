@@ -1,4 +1,8 @@
-﻿namespace AudioSensei
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
+namespace AudioSensei
 {
     public static class UnmanagedUtils
     {
@@ -13,6 +17,19 @@
             }
 
             return maxSize;
+        }
+
+        public static unsafe List<string> GetDoubleTerminatedStringArray(byte* data)
+        {
+            List<string> temp = new List<string>();
+            int len;
+            while ((len = Strlen(data)) != 0)
+            {
+                temp.Add(Marshal.PtrToStringUTF8(new IntPtr(data), len));
+                data += len;
+            }
+
+            return temp;
         }
 
         public static void HiLoWord(uint value, out ushort hiword, out ushort loword)

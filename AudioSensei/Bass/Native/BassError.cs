@@ -154,9 +154,21 @@
         /// Unstreamable file
         /// </summary>
         Unstreamable = 47,
+
         /// <summary>
         /// Some other mystery problem
         /// </summary>
-        Unknown = -1
+        Unknown = -1,
+
+        #region BassCd
+        /// <summary>
+        /// No CD in drive
+        /// </summary>
+        NoCd = 12,
+        /// <summary>
+        /// Invalid track number
+        /// </summary>
+        CdTrack = 13
+        #endregion
     }
 }
