@@ -23,7 +23,7 @@ namespace AudioSensei.Bass.Native
 
         private const string Bass = "bass";
 
-#if WINDOWS || OSX
+#if WINDOWS
         private const UnmanagedType StringMarshal = UnmanagedType.LPWStr;
         private const StreamFlags UnicodeFlag = StreamFlags.Unicode;
         private const uint PluginUnicodeFlag = 0x80000000;
