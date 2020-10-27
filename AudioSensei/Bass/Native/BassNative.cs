@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using AudioSensei.Bass.Native.Handles;
+using AudioSensei.Configuration;
 using Serilog;
 
 namespace AudioSensei.Bass.Native
@@ -37,12 +38,14 @@ namespace AudioSensei.Bass.Native
         private static bool _invalidState;
 
         public readonly ConcurrentDictionary<PluginHandle, (BassPluginManifest manifest, BassPluginInfo info)> Plugins;
-        private readonly int _device;
-        private readonly uint _frequency;
+        
+        private readonly BassConfiguration _bassConfiguration;
+        
         private readonly BassInitFlags _flags;
         private readonly IntPtr _windowHandle;
 
         private readonly StreamFlags _floatFlag;
+        private readonly StreamFlags _restrateFlag;
 
 #if WINDOWS
         static BassNative()
@@ -51,7 +54,7 @@ namespace AudioSensei.Bass.Native
         }
 #endif
 
-        public unsafe BassNative(int device = -1, uint frequency = 44000, IntPtr windowHandle = default)
+        public unsafe BassNative(BassConfiguration bassConfiguration, IntPtr windowHandle = default)
         {
             lock (LoadLock)
             {
@@ -122,11 +125,11 @@ namespace AudioSensei.Bass.Native
                     }
 #endif
 
-                    _device = device;
-                    _frequency = frequency;
+                    _bassConfiguration = bassConfiguration;
+
                     _flags = 0;
                     _windowHandle = windowHandle;
-                    if (!BASS_Init(_device, _frequency, _flags, _windowHandle, IntPtr.Zero))
+                    if (!BASS_Init(bassConfiguration.Device, bassConfiguration.Frequency, _flags, _windowHandle, IntPtr.Zero))
                     {
                         throw new BassException("Init failed");
                     }
@@ -152,6 +155,12 @@ namespace AudioSensei.Bass.Native
                         Log.Information("Enabling floating point data output");
                     }
 
+                    _restrateFlag = bassConfiguration.Restrate ? StreamFlags.StreamRestrate : StreamFlags.None;
+
+                    if (_restrateFlag.HasFlag(StreamFlags.StreamRestrate))
+                    {
+                        Log.Information("Enabling stream restrate");
+                    }
 
                     Log.Information($"Setting useragent to {WebHelper.UserAgent}");
                     BASS_SetConfigPtr(BassConfig.NetAgent, WebHelper.UserAgent);
@@ -204,7 +213,7 @@ namespace AudioSensei.Bass.Native
         {
             // ReSharper disable InconsistentlySynchronizedField
             if (!((BASS_GetInfo(out var info) && info.initflags.HasFlag(BassInitFlags.DeviceDSound) &&
-                   BASS_Init(_device, _frequency, _flags, _windowHandle, IntPtr.Zero)) || BASS_Start()))
+                   BASS_Init(_bassConfiguration.Device, _bassConfiguration.Frequency, _flags, _windowHandle, IntPtr.Zero)) || BASS_Start()))
             {
                 throw new BassException("Restart failed");
             }
@@ -230,7 +239,7 @@ namespace AudioSensei.Bass.Native
                 url += "\r\n" + string.Join("\r\n", webHeaders) + "\r\n";
             }
 
-            var handle = BASS_StreamCreateURL(url, 0, _floatFlag | StreamFlags.StreamAutoFree /*| StreamFlags.StreamRestrate*/ | UnicodeFlag, null, IntPtr.Zero);
+            var handle = BASS_StreamCreateURL(url, 0, _floatFlag | _restrateFlag | StreamFlags.StreamAutoFree | UnicodeFlag, null, IntPtr.Zero);
 
             if (handle == StreamHandle.Null)
             {

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using AudioSensei.Bass.Native;
+using AudioSensei.Configuration;
 using JetBrains.Annotations;
 
 namespace AudioSensei.Bass
@@ -30,9 +31,9 @@ namespace AudioSensei.Bass
             }
         }
 
-        public BassAudioBackend(IntPtr windowHandle = default)
+        public BassAudioBackend(BassConfiguration bassConfiguration, IntPtr windowHandle = default)
         {
-            _bassNative = new BassNative(windowHandle: windowHandle);
+            _bassNative = new BassNative(bassConfiguration, windowHandle: windowHandle);
         }
 
         public IAudioStream Play(Uri uri)
