@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using AudioSensei.Configuration;
 using AudioSensei.Crypto;
 using AudioSensei.Models;
 using Avalonia.Threading;
@@ -134,13 +135,15 @@ namespace AudioSensei.ViewModels
         private TcpListener _playbackServer;
         private readonly object _playbackServerLock = new object();
 
-        public MainWindowViewModel(IAudioBackend audioBackend)
+        public MainWindowViewModel(IAudioBackend audioBackend, PlayerConfiguration playerConfiguration)
         {
             _typeHash = FowlerNollVo1A.GetHash(GetType().FullName);
 
             Program.Exit += Dispose;
 
             AudioBackend = audioBackend;
+            AudioBackend.Volume = playerConfiguration.DefaultVolume;
+            
             YoutubePlayer = new YoutubePlayer(audioBackend);
 
             InitializeCommands();
