@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace AudioSensei

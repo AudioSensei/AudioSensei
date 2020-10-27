@@ -20,7 +20,6 @@ namespace AudioSensei
             _backend = backend;
         }
 
-        [NotNull]
         public async Task<YoutubeInfo> Play([NotNull] string url)
         {
             var b = await _client.Videos.GetAsync(url);

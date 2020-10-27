@@ -381,7 +381,6 @@ namespace AudioSensei.ViewModels
             Log.Information("Stopping listening to playback requests");
         }
 
-        [NotNull]
         private async Task ProcessClient([NotNull] TcpClient client)
         {
             byte[] tempBuffer = null;
@@ -532,7 +531,6 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        [NotNull]
         private async Task PlayOrPause()
         {
             currentlyPlayedPlaylist ??= currentlyVisiblePlaylist;
@@ -626,7 +624,6 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        [NotNull]
         private async Task Previous(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
@@ -664,7 +661,6 @@ namespace AudioSensei.ViewModels
             await Play(track.Value);
         }
 
-        [NotNull]
         private async Task Next(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
@@ -755,7 +751,6 @@ namespace AudioSensei.ViewModels
             CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
         }
 
-        [NotNull]
         private async Task Play(Track track)
         {
             AudioStream?.Dispose();
