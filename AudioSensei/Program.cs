@@ -27,7 +27,8 @@ namespace AudioSensei
 {
     class Program
     {
-        [NotNull] public static event Action Exit;
+        [CanBeNull]
+        public static event Action Exit;
 
         private static readonly object ExitLock = new object();
         private static bool _exited;
