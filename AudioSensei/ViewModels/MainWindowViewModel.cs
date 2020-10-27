@@ -15,6 +15,7 @@ using AudioSensei.Configuration;
 using AudioSensei.Crypto;
 using AudioSensei.Models;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using ReactiveUI;
 using Serilog;
 
@@ -135,7 +136,7 @@ namespace AudioSensei.ViewModels
         private TcpListener _playbackServer;
         private readonly object _playbackServerLock = new object();
 
-        public MainWindowViewModel(IAudioBackend audioBackend, PlayerConfiguration playerConfiguration)
+        public MainWindowViewModel([NotNull] IAudioBackend audioBackend, [NotNull] PlayerConfiguration playerConfiguration)
         {
             _typeHash = FowlerNollVo1A.GetHash(GetType().FullName);
 
@@ -290,7 +291,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        private bool SendPlaybackRequest(ushort port, string[] paths)
+        private bool SendPlaybackRequest(ushort port, [NotNull] string[] paths)
         {
             try
             {
@@ -380,7 +381,7 @@ namespace AudioSensei.ViewModels
             Log.Information("Stopping listening to playback requests");
         }
 
-        private async Task ProcessClient(TcpClient client)
+        private async Task ProcessClient([NotNull] TcpClient client)
         {
             byte[] tempBuffer = null;
             try
