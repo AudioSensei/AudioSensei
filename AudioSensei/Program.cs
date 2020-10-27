@@ -4,6 +4,7 @@ using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using JetBrains.Annotations;
 using Serilog;
 
 #if NO_RID
@@ -26,7 +27,7 @@ namespace AudioSensei
 {
     class Program
     {
-        public static event Action Exit;
+        [NotNull] public static event Action Exit;
 
         private static readonly object ExitLock = new object();
         private static bool _exited;
@@ -67,7 +68,7 @@ namespace AudioSensei
             }
         }
 
-        public static void RegisterExitOnSameThread(Action action)
+        public static void RegisterExitOnSameThread([NotNull] Action action)
         {
             int thread = Environment.CurrentManagedThreadId;
             Exit += () =>

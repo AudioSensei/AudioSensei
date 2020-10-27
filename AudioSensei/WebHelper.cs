@@ -2,11 +2,13 @@
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using DynamicData.Annotations;
 
 namespace AudioSensei
 {
     internal static class WebHelper
     {
+        [NotNull]
         public static readonly string UserAgent = @"Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0";
 
         static WebHelper()
@@ -25,6 +27,7 @@ namespace AudioSensei
             }
         }
 
+        [NotNull]
         public static HttpClient CreateHttpClient()
         {
             var c = new HttpClient(new SocketsHttpHandler

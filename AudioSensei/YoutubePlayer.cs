@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.ClosedCaptions;
@@ -19,7 +20,8 @@ namespace AudioSensei
             _backend = backend;
         }
 
-        public async Task<YoutubeInfo> Play(string url)
+        [NotNull]
+        public async Task<YoutubeInfo> Play([NotNull] string url)
         {
             var b = await _client.Videos.GetAsync(url);
             var c = await _client.Videos.ClosedCaptions.GetManifestAsync(b.Id);

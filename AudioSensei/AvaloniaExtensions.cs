@@ -9,7 +9,7 @@ namespace AudioSensei
 {
     public static class AvaloniaExtensions
     {
-        public static void SetForegroundWindow(this Window window)
+        public static void SetForegroundWindow([JetBrains.Annotations.CanBeNull] this Window window)
         {
             if (window == null)
             {

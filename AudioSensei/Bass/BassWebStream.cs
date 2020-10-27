@@ -1,5 +1,6 @@
 ﻿using System;
 using AudioSensei.Bass.Native;
+using JetBrains.Annotations;
 
 namespace AudioSensei.Bass
 {
@@ -7,13 +8,13 @@ namespace AudioSensei.Bass
     {
         public Uri Uri { get; }
 
-        internal BassWebStream(Uri link, string[] headers = null) :
+        internal BassWebStream([NotNull] Uri link, [CanBeNull] string[] headers = null) :
             base(BassNative.Singleton.CreateStreamFromUrl(link.IsAbsoluteUri ? link.AbsoluteUri : Uri.EscapeUriString(link.ToString()), headers))
         {
             Uri = link;
         }
 
-        internal BassWebStream(string link, string[] headers = null) : this(new Uri(link), headers)
+        internal BassWebStream([NotNull] string link, [CanBeNull] string[] headers = null) : this(new Uri(link), headers)
         {
         }
     }

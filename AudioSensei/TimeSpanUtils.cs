@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace AudioSensei
 {
@@ -14,6 +15,7 @@ namespace AudioSensei
             return TimeSpan.FromSeconds(position / 75d);
         }
 
+        [NotNull]
         public static string ToPlaybackPosition(this TimeSpan ts)
         {
             return ts.TotalHours < 1 ? ts.ToString(@"mm\:ss") : ((int)Math.Floor(ts.TotalHours)) + ts.ToString(@"\:mm\:ss");

@@ -1,5 +1,6 @@
 ﻿using System;
 using AudioSensei.Bass.Native;
+using JetBrains.Annotations;
 
 namespace AudioSensei.Bass
 {
@@ -7,9 +8,9 @@ namespace AudioSensei.Bass
     {
         public BassError ErrorCode { get; }
 
-        public BassException(string message) : this(message, BassNative.GetLastErrorCode()) { }
+        public BassException([CanBeNull] string message) : this(message, BassNative.GetLastErrorCode()) { }
 
-        public BassException(string message, BassError errorCode) : base($"{message} (Error: {errorCode})")
+        public BassException([CanBeNull] string message, BassError errorCode) : base($"{message} (Error: {errorCode})")
         {
             ErrorCode = errorCode;
         }

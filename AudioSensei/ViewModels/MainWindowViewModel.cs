@@ -15,6 +15,7 @@ using AudioSensei.Configuration;
 using AudioSensei.Crypto;
 using AudioSensei.Models;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using ReactiveUI;
 using Serilog;
 
@@ -135,7 +136,7 @@ namespace AudioSensei.ViewModels
         private TcpListener _playbackServer;
         private readonly object _playbackServerLock = new object();
 
-        public MainWindowViewModel(IAudioBackend audioBackend, PlayerConfiguration playerConfiguration)
+        public MainWindowViewModel([NotNull] IAudioBackend audioBackend, [NotNull] PlayerConfiguration playerConfiguration)
         {
             _typeHash = FowlerNollVo1A.GetHash(GetType().FullName);
 
@@ -290,7 +291,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        private bool SendPlaybackRequest(ushort port, string[] paths)
+        private bool SendPlaybackRequest(ushort port, [NotNull] string[] paths)
         {
             try
             {
@@ -380,7 +381,8 @@ namespace AudioSensei.ViewModels
             Log.Information("Stopping listening to playback requests");
         }
 
-        private async Task ProcessClient(TcpClient client)
+        [NotNull]
+        private async Task ProcessClient([NotNull] TcpClient client)
         {
             byte[] tempBuffer = null;
             try
@@ -530,6 +532,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
+        [NotNull]
         private async Task PlayOrPause()
         {
             currentlyPlayedPlaylist ??= currentlyVisiblePlaylist;
@@ -623,6 +626,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
+        [NotNull]
         private async Task Previous(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
@@ -660,6 +664,7 @@ namespace AudioSensei.ViewModels
             await Play(track.Value);
         }
 
+        [NotNull]
         private async Task Next(bool repeat = true, bool shuffle = false)
         {
             if (currentlyPlayedPlaylist == null)
@@ -697,6 +702,7 @@ namespace AudioSensei.ViewModels
             await Play(track.Value);
         }
 
+        [NotNull]
         private void Shuffle()
         {
             if (shuffle)
@@ -710,6 +716,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
+        [NotNull]
         private void Repeat()
         {
             if (repeat)
@@ -723,6 +730,7 @@ namespace AudioSensei.ViewModels
             }
         }
 
+        [NotNull]
         private void CreatePlaylist()
         {
             if (!string.IsNullOrWhiteSpace(playlistName))
@@ -733,6 +741,7 @@ namespace AudioSensei.ViewModels
             CancelPlaylistCreation();
         }
 
+        [NotNull]
         private void CancelPlaylistCreation()
         {
             IsPlaylistCreatorVisible = false;
@@ -741,11 +750,13 @@ namespace AudioSensei.ViewModels
             PlaylistDescription = "";
         }
 
+        [NotNull]
         private void SelectPlaylist(Guid uniqueId)
         {
             CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
         }
 
+        [NotNull]
         private async Task Play(Track track)
         {
             AudioStream?.Dispose();
