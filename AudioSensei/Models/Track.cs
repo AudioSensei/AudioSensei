@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using JetBrains.Annotations;
 
 namespace AudioSensei.Models
 {
@@ -28,6 +29,7 @@ namespace AudioSensei.Models
             }
         }
         public Source Source { get; }
+        [NotNull]
         public string Url { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -36,7 +38,7 @@ namespace AudioSensei.Models
         private string _author;
 
         [JsonConstructor]
-        public Track(Source source, string url)
+        public Track(Source source, [NotNull] string url)
         {
             _name = null;
             _author = null;
@@ -49,7 +51,8 @@ namespace AudioSensei.Models
             Author = "";
         }
 
-        public static Track CreateFromFile(string filePath)
+        [Pure]
+        public static Track CreateFromFile([NotNull] string filePath)
         {
             var track = new Track(Source.File, filePath);
             track.LoadMetadataFromFile();
@@ -75,26 +78,31 @@ namespace AudioSensei.Models
             }
         }
 
+        [Pure]
         public bool Equals(Track other)
         {
             return Name == other.Name && Author == other.Author && Source == other.Source && Url == other.Url;
         }
 
+        [Pure]
         public override bool Equals(object obj)
         {
             return obj is Track other && Equals(other);
         }
 
+        [Pure]
         public override int GetHashCode()
         {
             return HashCode.Combine(Name, Author, (int)Source, Url);
         }
 
+        [Pure]
         public static bool operator ==(Track left, Track right)
         {
             return left.Equals(right);
         }
 
+        [Pure]
         public static bool operator !=(Track left, Track right)
         {
             return !left.Equals(right);

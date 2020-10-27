@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace AudioSensei.Models
 {
@@ -62,6 +63,7 @@ namespace AudioSensei.Models
             Description = description;
         }
 
+        [Pure]
         public static Playlist Load(string filePath)
         {
             return JsonConvert.DeserializeObject<Playlist>(File.ReadAllText(filePath));
@@ -72,26 +74,31 @@ namespace AudioSensei.Models
             File.WriteAllText(filePath, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
 
+        [Pure]
         public bool Equals(Playlist other)
         {
             return Name == other.Name && UniqueId == other.UniqueId && Author == other.Author && Description == other.Description && Tracks.SequenceEqual(other.Tracks);
         }
 
+        [Pure]
         public override bool Equals(object obj)
         {
             return obj is Playlist other && Equals(other);
         }
 
+        [Pure]
         public override int GetHashCode()
         {
             return HashCode.Combine(Name, UniqueId, Author, Description, Tracks);
         }
 
+        [Pure]
         public static bool operator ==(Playlist left, Playlist right)
         {
             return left.Equals(right);
         }
 
+        [Pure]
         public static bool operator !=(Playlist left, Playlist right)
         {
             return !left.Equals(right);

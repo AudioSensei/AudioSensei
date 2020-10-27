@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Logging;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace AudioSensei
@@ -13,12 +14,12 @@ namespace AudioSensei
             _logger = logger;
         }
 
-        public bool IsEnabled(LogEventLevel level, string area)
+        public bool IsEnabled(LogEventLevel level, [NotNull] string area)
         {
             return _logger.IsEnabled(ConvertLevel(level));
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate)
+        public void Log(LogEventLevel level, [NotNull] string area, [NotNull] object source, [NotNull] string messageTemplate)
         {
             switch (level)
             {
@@ -46,7 +47,7 @@ namespace AudioSensei
             }
         }
 
-        public void Log<T0>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0)
+        public void Log<T0>(LogEventLevel level, [NotNull] string area, [NotNull] object source, [NotNull] string messageTemplate, T0 propertyValue0)
         {
             switch (level)
             {
@@ -74,7 +75,7 @@ namespace AudioSensei
             }
         }
 
-        public void Log<T0, T1>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0, T1 propertyValue1)
+        public void Log<T0, T1>(LogEventLevel level, [NotNull] string area, [NotNull] object source, [NotNull] string messageTemplate, T0 propertyValue0, T1 propertyValue1)
         {
             switch (level)
             {
@@ -102,7 +103,7 @@ namespace AudioSensei
             }
         }
 
-        public void Log<T0, T1, T2>(LogEventLevel level, string area, object source, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
+        public void Log<T0, T1, T2>(LogEventLevel level, [NotNull] string area, [NotNull] object source, [NotNull] string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2)
         {
             switch (level)
             {
@@ -130,7 +131,7 @@ namespace AudioSensei
             }
         }
 
-        public void Log(LogEventLevel level, string area, object source, string messageTemplate, params object[] propertyValues)
+        public void Log(LogEventLevel level, [NotNull] string area, [NotNull] object source, [NotNull] string messageTemplate, params object[] propertyValues)
         {
             switch (level)
             {

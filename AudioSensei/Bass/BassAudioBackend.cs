@@ -31,12 +31,13 @@ namespace AudioSensei.Bass
             }
         }
 
-        public BassAudioBackend(BassConfiguration bassConfiguration, IntPtr windowHandle = default)
+        public BassAudioBackend([NotNull] BassConfiguration bassConfiguration, IntPtr windowHandle = default)
         {
             _bassNative = new BassNative(bassConfiguration, windowHandle: windowHandle);
         }
 
-        public IAudioStream Play(Uri uri)
+        [CanBeNull, Pure]
+        public IAudioStream Play([NotNull] Uri uri)
         {
             if (uri.IsFile)
             {
@@ -75,7 +76,7 @@ namespace AudioSensei.Bass
         }
 
         [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName, CanBeNull] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

@@ -6,8 +6,11 @@ namespace AudioSensei.Configuration
 {
     public sealed class AudioSenseiConfiguration
     {
+        [NotNull]
         public GeneralConfiguration General { get; set; } = new GeneralConfiguration();
+        [NotNull]
         public PlayerConfiguration Player { get; set; } = new PlayerConfiguration();
+        [NotNull]
         public BassConfiguration Bass { get; set; } = new BassConfiguration();
     
         [NotNull]

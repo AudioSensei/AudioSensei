@@ -3,13 +3,14 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace AudioSensei
 {
     public static class AvaloniaExtensions
     {
-        public static void SetForegroundWindow(this Window window)
+        public static void SetForegroundWindow([CanBeNull] this Window window)
         {
             if (window == null)
             {
