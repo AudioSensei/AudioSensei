@@ -750,7 +750,6 @@ namespace AudioSensei.ViewModels
             PlaylistDescription = "";
         }
 
-        [NotNull]
         private void SelectPlaylist(Guid uniqueId)
         {
             CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
