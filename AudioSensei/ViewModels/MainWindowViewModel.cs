@@ -698,7 +698,6 @@ namespace AudioSensei.ViewModels
             await Play(track.Value);
         }
 
-        [NotNull]
         private void Shuffle()
         {
             if (shuffle)
@@ -712,7 +711,6 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        [NotNull]
         private void Repeat()
         {
             if (repeat)
@@ -726,7 +724,6 @@ namespace AudioSensei.ViewModels
             }
         }
 
-        [NotNull]
         private void CreatePlaylist()
         {
             if (!string.IsNullOrWhiteSpace(playlistName))
@@ -737,7 +734,6 @@ namespace AudioSensei.ViewModels
             CancelPlaylistCreation();
         }
 
-        [NotNull]
         private void CancelPlaylistCreation()
         {
             IsPlaylistCreatorVisible = false;
