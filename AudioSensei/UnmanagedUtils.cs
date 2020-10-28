@@ -1,4 +1,6 @@
-﻿namespace AudioSensei
+﻿using System.Threading;
+
+namespace AudioSensei
 {
     public static class UnmanagedUtils
     {
@@ -35,6 +37,17 @@
         public static uint MakeLong(ushort hiword, ushort loword)
         {
             return (uint)(hiword << (sizeof(ushort) * 8)) | loword;
+        }
+
+        public static bool JoinOrTerminate(this Thread thread, int timeout)
+        {
+            var joined = thread.Join(timeout);
+            if (!joined)
+            {
+                thread.Interrupt();
+            }
+
+            return joined;
         }
     }
 }

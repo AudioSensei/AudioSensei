@@ -73,8 +73,17 @@
     <BassTargetPath Condition="'$(TargetOs)' == 'OSX'">libbass.dylib</BassTargetPath>
     <DefineConstants Condition="!Exists('$(BassSourcePath)')">$(DefineConstants);NO_LIBRARY</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup>
+    <DiscordSourcePath Condition="'$(TargetOs)' == 'WINDOWS'">discord-rpc.$(TargetArch).dll</DiscordSourcePath>
+    <DiscordSourcePath Condition="'$(TargetOs)' == 'LINUX'">libdiscord-rpc.$(TargetArch).so</DiscordSourcePath>
+    <DiscordSourcePath Condition="'$(TargetOs)' == 'OSX'">libdiscord-rpc.$(TargetArch).dylib</DiscordSourcePath>
+    <DiscordTargetPath Condition="'$(TargetOs)' == 'WINDOWS'">discord-rpc.dll</DiscordTargetPath>
+    <DiscordTargetPath Condition="'$(TargetOs)' == 'LINUX'">libdiscord-rpc.so</DiscordTargetPath>
+    <DiscordTargetPath Condition="'$(TargetOs)' == 'OSX'">libdiscord-rpc.dylib</DiscordTargetPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Update="$(BassSourcePath)" Link="$(BassTargetPath)" CopyToOutputDirectory="Always" />
+    <None Update="$(DiscordSourcePath)" Link="$(DiscordTargetPath)" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(ProjectDir)BassPlugins\**" Exclude="$(ProjectDir)BassPlugins\**\*.dll;$(ProjectDir)BassPlugins\**\*.so;$(ProjectDir)BassPlugins\**\*.dylib" Condition="'$(TargetOs)' == 'WINDOWS'" CopyToOutputDirectory="Always" />

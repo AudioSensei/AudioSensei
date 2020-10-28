@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AudioSensei.Configuration;
 using AudioSensei.Crypto;
+using AudioSensei.Discord;
 using AudioSensei.Models;
 using Avalonia.Threading;
 using JetBrains.Annotations;
@@ -84,7 +85,7 @@ namespace AudioSensei.ViewModels
         // Current Stream
         public string CurrentTimeFormatted => AudioStream == null ? "00:00" : AudioStream.CurrentTime.ToPlaybackPosition();
         public string TotalTimeFormatted => AudioStream == null ? "00:00" : AudioStream.TotalTime.ToPlaybackPosition();
-        public double Total => AudioStream == null ? 0 : (AudioStream.CurrentTime / AudioStream.TotalTime * 100);
+        public double Total => AudioStream == null ? 0 : AudioStream.CurrentTime / AudioStream.TotalTime * 100;
 
         // Commands
         public ReactiveCommand<Unit, Unit> PlayOrPauseCommand { get; private set; }
@@ -103,13 +104,14 @@ namespace AudioSensei.ViewModels
 
         public IAudioBackend AudioBackend { get; }
         public YoutubePlayer YoutubePlayer { get; }
+        private readonly DiscordPresence _discordPresence;
 
         public IAudioStream AudioStream { get; private set; }
 
         private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
         private readonly Random random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
 
-        private bool _disposed;
+        private volatile bool _disposed;
 
         private bool repeat;
         private bool shuffle;
@@ -129,12 +131,18 @@ namespace AudioSensei.ViewModels
 
         // Tracks
         private int selectedTrackIndex = -1;
+        private Track currentTrack;
 
         // IPC
         private const int ProtocolVersion = 1;
         private readonly ulong _typeHash;
         private TcpListener _playbackServer;
         private readonly object _playbackServerLock = new object();
+
+        // Status update
+        private readonly Thread _statusThread;
+        private AudioStreamStatus _lastStatus = AudioStreamStatus.Invalid;
+        public event Action<AudioStreamStatus> StatusChanged;
 
         public MainWindowViewModel([NotNull] IAudioBackend audioBackend, [NotNull] PlayerConfiguration playerConfiguration)
         {
@@ -146,13 +154,49 @@ namespace AudioSensei.ViewModels
             AudioBackend.Volume = playerConfiguration.DefaultVolume;
             
             YoutubePlayer = new YoutubePlayer(audioBackend);
+            _discordPresence = new DiscordPresence("668517213388668939");
+            _statusThread = new Thread(StatusChecker)
+            { IsBackground = true, Priority = ThreadPriority.BelowNormal };
+            _statusThread.Start();
 
             InitializeCommands();
             LoadPlaylists();
 
+            StatusChanged += status =>
+            {
+                var t = currentTrack;
+                switch (status)
+                {
+                    case AudioStreamStatus.Invalid:
+                        _discordPresence.UpdatePresence(null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
+                        break;
+                    case AudioStreamStatus.Paused:
+                        _discordPresence.UpdatePresence($"Paused: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
+                        break;
+                    case AudioStreamStatus.Playing:
+                        var startTimestamp = DateTimeOffset.UtcNow;
+                        _discordPresence.UpdatePresence($"Playing: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime - AudioStream.CurrentTime).ToUnixTimeSeconds());
+                        break;
+                }
+            };
             timer.Tick += Tick;
 
             ProcessStartupData();
+        }
+
+        private void StatusChecker()
+        {
+            while (!_disposed)
+            {
+                var status = AudioStream?.Status ?? AudioStreamStatus.Invalid;
+                if (_lastStatus != status)
+                {
+                    _lastStatus = status;
+                    StatusChanged?.Invoke(status);
+                }
+
+                Thread.Sleep(100);
+            }
         }
 
         private void Free()
@@ -162,6 +206,8 @@ namespace AudioSensei.ViewModels
                 return;
             }
             _disposed = true;
+            _discordPresence.Dispose();
+            _statusThread?.JoinOrTerminate(300);
             AudioStream?.Dispose();
             AudioStream = null;
             AudioBackend.Dispose();
@@ -559,11 +605,13 @@ namespace AudioSensei.ViewModels
 
             if (AudioStream != null && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
+                var t = currentTrack;
                 // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (AudioStream.Status)
                 {
                     case AudioStreamStatus.Playing:
                         AudioStream.Pause();
+                        _discordPresence.UpdatePresence($"Paused: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
                         if (Dispatcher.UIThread.CheckAccess())
                         {
                             timer.Stop();
@@ -575,6 +623,8 @@ namespace AudioSensei.ViewModels
                         return;
                     case AudioStreamStatus.Paused:
                         AudioStream.Resume();
+                        var startTimestamp = DateTimeOffset.UtcNow;
+                        _discordPresence.UpdatePresence($"Playing: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime - AudioStream.CurrentTime).ToUnixTimeSeconds());
                         if (Dispatcher.UIThread.CheckAccess())
                         {
                             timer.Start();
@@ -614,6 +664,7 @@ namespace AudioSensei.ViewModels
         {
             AudioStream?.Dispose();
             AudioStream = null;
+            _discordPresence.UpdatePresence(null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
             if (Dispatcher.UIThread.CheckAccess())
             {
                 timer.Stop();
@@ -759,6 +810,10 @@ namespace AudioSensei.ViewModels
                 _ => throw new NotImplementedException()
             };
 
+            currentTrack = track;
+
+            var startTimestamp = DateTimeOffset.UtcNow;
+            _discordPresence.UpdatePresence($"Playing: {track.Name ?? "Unknown track"}", track.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime).ToUnixTimeSeconds());
             if (Dispatcher.UIThread.CheckAccess())
             {
                 timer.Start();
