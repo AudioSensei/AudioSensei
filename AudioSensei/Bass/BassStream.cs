@@ -23,8 +23,8 @@ namespace AudioSensei.Bass
                 switch (BassNative.Singleton.GetChannelStatus(Handle))
                 {
                     case ChannelStatus.Playing:
-                    case ChannelStatus.Stalled:
                         return AudioStreamStatus.Playing;
+                    case ChannelStatus.Stalled:
                     case ChannelStatus.Paused:
                     case ChannelStatus.PausedDevice:
                         return AudioStreamStatus.Paused;
