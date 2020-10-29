@@ -89,6 +89,12 @@ namespace AudioSensei
         {
             try
             {
+                Exit += () =>
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                };
                 return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
             }
             finally
