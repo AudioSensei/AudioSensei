@@ -1,5 +1,7 @@
 ﻿using AudioSensei.Bass;
 using AudioSensei.Bass.Native;
+using AudioSensei.Bass.Native.Handles;
+using AudioSensei.Configuration;
 using Serilog;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,7 +23,7 @@ namespace AudioSensei.Tests
         public void TestInitialization()
         {
             // ReSharper disable once UnusedVariable
-            using (var bass = new BassNative(0))
+            using (var bass = new BassNative(new BassConfiguration { Device = 0 }))
             {
             }
         }
@@ -31,12 +33,12 @@ namespace AudioSensei.Tests
         public void TestPlayback(string path)
         {
             // ReSharper disable once UnusedVariable
-            using (var bass = new BassNative(0))
+            using (var bass = new BassNative(new BassConfiguration { Device = 0 }))
             {
                 using (var stream = new BassFileStream(path))
                 {
                     Assert.NotNull(stream);
-                    Assert.NotEqual(Bass.Native.Handles.StreamHandle.Null, stream.Handle);
+                    Assert.NotEqual(StreamHandle.Null, stream.Handle);
 
                     stream.Pause();
                     Assert.Equal(AudioStreamStatus.Paused, stream.Status);
@@ -54,12 +56,12 @@ namespace AudioSensei.Tests
         [InlineData("test.wav")]
         public void TestChannelAttributes(string path)
         {
-            using (var bass = new BassNative(0))
+            using (var bass = new BassNative(new BassConfiguration { Device = 0 }))
             {
                 using (var stream = new BassFileStream(path))
                 {
                     Assert.NotNull(stream);
-                    Assert.NotEqual(Bass.Native.Handles.StreamHandle.Null, stream.Handle);
+                    Assert.NotEqual(StreamHandle.Null, stream.Handle);
 
                     const float vol = 0.5f;
                     bass.SetChannelAttribute(stream.Handle, ChannelAttribute.VolumeLevel, vol);

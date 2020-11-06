@@ -37,7 +37,7 @@ namespace AudioSensei.Bass.Native
         public static BassNative Singleton { get; private set; }
         private static bool _invalidState;
 
-        public readonly ConcurrentDictionary<PluginHandle, (BassPluginManifest manifest, BassPluginInfo info)> Plugins;
+        public readonly ConcurrentDictionary<PluginHandle, (BassPluginManifest manifest, BassPluginInfo info, IntPtr module)> Plugins;
         
         private readonly BassConfiguration _bassConfiguration;
         
@@ -74,7 +74,7 @@ namespace AudioSensei.Bass.Native
 
                     const string filter = "*.manifest";
 
-                    Plugins = new ConcurrentDictionary<PluginHandle, (BassPluginManifest, BassPluginInfo)>();
+                    Plugins = new ConcurrentDictionary<PluginHandle, (BassPluginManifest, BassPluginInfo, IntPtr)>();
                     foreach (var file in Directory.EnumerateFiles(
                         Directory.Exists("BassPlugins")
                             ? "BassPlugins"
@@ -112,6 +112,8 @@ namespace AudioSensei.Bass.Native
                             throw new FileNotFoundException($"Couldn't load bass plugin from {path}", path);
                         }
 
+                        var module = NativeLibrary.Load(path);
+
                         var handle = BASS_PluginLoad(path, PluginUnicodeFlag);
                         if (handle == PluginHandle.Null)
                             throw new BassException($"Loading {path} as plugin failed");
@@ -120,7 +122,7 @@ namespace AudioSensei.Bass.Native
                             throw new BassException($"Getting plugin info for {path} failed");
                         var info = *infoPtr;
                         Log.Information($"Loaded Bass plugin {manifest.Name} from {path} version {info.version}. Supported formats: {string.Join(", ", info.ListSupportedFormats())}");
-                        Plugins[handle] = (manifest, info);
+                        Plugins[handle] = (manifest, info, module);
                     }
 
 #if WINDOWS
@@ -193,6 +195,11 @@ namespace AudioSensei.Bass.Native
         {
             lock (LoadLock)
             {
+                foreach (var plugin in Plugins)
+                {
+                    BASS_PluginFree(plugin.Key);
+                    NativeLibrary.Free(plugin.Value.module);
+                }
                 Plugins.Clear();
                 BASS_PluginFree(PluginHandle.Null);
                 if (!BASS_Free())
