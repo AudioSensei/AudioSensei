@@ -55,7 +55,9 @@ namespace AudioSensei.ViewModels
         }
 
         // Playlists
-        public ObservableCollection<Playlist> Playlists { get; set; } = new ObservableCollection<Playlist>();
+        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } =
+            new ObservableCollection<PlaylistViewModel>();
+
         public Playlist? CurrentlyPlayedPlaylist
         {
             get => currentlyPlayedPlaylist;
@@ -569,12 +571,16 @@ namespace AudioSensei.ViewModels
                     playlist.Tracks[i] = track;
                 }
 
-                Playlists.Add(playlist);
+                Playlists.Add(new PlaylistViewModel 
+                {
+                    Playlist = playlist,
+                    Command = SelectPlaylistCommand,
+                });
             }
 
             if (Playlists.Count > 0)
             {
-                CurrentlyVisiblePlaylist = Playlists[0];
+                CurrentlyVisiblePlaylist = Playlists[0].Playlist;
             }
         }
 
@@ -780,7 +786,13 @@ namespace AudioSensei.ViewModels
         {
             if (!string.IsNullOrWhiteSpace(playlistName))
             {
-                Playlists.Add(new Playlist(playlistName, Guid.NewGuid(), playlistAuthor, playlistDescription, new ObservableCollection<Track>()));
+                var playlist = new Playlist(playlistName, Guid.NewGuid(), playlistAuthor, playlistDescription, new ObservableCollection<Track>());
+                
+                Playlists.Add(new PlaylistViewModel
+                {
+                    Playlist = playlist,
+                    Command = SelectPlaylistCommand,
+                });
             }
 
             CancelPlaylistCreation();
@@ -796,7 +808,7 @@ namespace AudioSensei.ViewModels
 
         private void SelectPlaylist(Guid uniqueId)
         {
-            CurrentlyVisiblePlaylist = Playlists.First(playlist => playlist.UniqueId == uniqueId);
+            CurrentlyVisiblePlaylist = Playlists.Select(playlist => playlist.Playlist).First(playlist => playlist.UniqueId == uniqueId);
         }
 
         private async Task Play(Track track)

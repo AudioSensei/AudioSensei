@@ -38,16 +38,17 @@
 
                 <TextBlock TextAlignment="Left" Margin="10,5,0,0">PLAYLISTS</TextBlock>
 
-                <ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}" DataContext="{Binding}">
+                <ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
                       <Button x:Name="SelectPlaylistButton" Height="30" Width="150" Margin="10,10,10,0">
-                        <i:Interaction.Behaviors>
-                          <ia:EventTriggerBehavior EventName="Click" SourceObject="{Binding #SelectPlaylistButton}">
-                            <ia:InvokeCommandAction Command="{Binding $parent[ItemsControl].DataContext.SelectPlaylistCommand}" CommandParameter="{Binding UniqueId}"/>    
-                          </ia:EventTriggerBehavior>
-                        </i:Interaction.Behaviors>
-                        <TextBlock Text="{Binding Name}"/>
+                        <Button.Styles>
+                          <Style Selector="Button">
+                            <Setter Property="Command" Value="{Binding Command}" />
+                            <Setter Property="CommandParameter" Value="{Binding Playlist.UniqueId}" />
+                          </Style>
+                        </Button.Styles>
+                        <TextBlock Text="{Binding Playlist.Name}"/>
                       </Button>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
