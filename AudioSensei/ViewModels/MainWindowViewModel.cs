@@ -27,47 +27,47 @@ namespace AudioSensei.ViewModels
         // Pages
         public int SelectedPageIndex
         {
-            get => selectedPageIndex;
-            set => this.RaiseAndSetIfChanged(ref selectedPageIndex, value, nameof(SelectedPageIndex));
+            get => _selectedPageIndex;
+            set => this.RaiseAndSetIfChanged(ref _selectedPageIndex, value, nameof(SelectedPageIndex));
         }
 
         // Playlist creator
         public bool IsPlaylistCreatorVisible
         {
-            get => isPlaylistCreatorVisible;
-            set => this.RaiseAndSetIfChanged(ref isPlaylistCreatorVisible, value, nameof(IsPlaylistCreatorVisible));
+            get => _isPlaylistCreatorVisible;
+            set => this.RaiseAndSetIfChanged(ref _isPlaylistCreatorVisible, value, nameof(IsPlaylistCreatorVisible));
         }
         public string PlaylistName
         {
-            get => playlistName;
-            set => this.RaiseAndSetIfChanged(ref playlistName, value, nameof(PlaylistName));
+            get => _playlistName;
+            set => this.RaiseAndSetIfChanged(ref _playlistName, value, nameof(PlaylistName));
         }
         public string PlaylistDescription
         {
-            get => playlistDescription;
-            set => this.RaiseAndSetIfChanged(ref playlistDescription, value, nameof(PlaylistDescription));
+            get => _playlistDescription;
+            set => this.RaiseAndSetIfChanged(ref _playlistDescription, value, nameof(PlaylistDescription));
         }
         public string PlaylistAuthor
         {
-            get => playlistAuthor;
-            set => this.RaiseAndSetIfChanged(ref playlistAuthor, value, nameof(PlaylistAuthor));
+            get => _playlistAuthor;
+            set => this.RaiseAndSetIfChanged(ref _playlistAuthor, value, nameof(PlaylistAuthor));
         }
 
         // Playlists
         public ObservableCollection<Playlist> Playlists { get; set; } = new ObservableCollection<Playlist>();
         public Playlist? CurrentlyPlayedPlaylist
         {
-            get => currentlyPlayedPlaylist;
-            set => this.RaiseAndSetIfChanged(ref currentlyPlayedPlaylist, value, nameof(CurrentlyPlayedPlaylist));
+            get => _currentlyPlayedPlaylist;
+            set => this.RaiseAndSetIfChanged(ref _currentlyPlayedPlaylist, value, nameof(CurrentlyPlayedPlaylist));
         }
         public Playlist CurrentlyVisiblePlaylist
         {
-            get => currentlyVisiblePlaylist;
+            get => _currentlyVisiblePlaylist;
             set
             {
-                this.RaiseAndSetIfChanged(ref currentlyVisiblePlaylist, value, nameof(CurrentlyVisiblePlaylist));
+                this.RaiseAndSetIfChanged(ref _currentlyVisiblePlaylist, value, nameof(CurrentlyVisiblePlaylist));
 
-                if (currentlyPlayedPlaylist == currentlyVisiblePlaylist)
+                if (_currentlyPlayedPlaylist == _currentlyVisiblePlaylist)
                 {
                     SelectedTrackIndex = CurrentTrackIndex;
                 }
@@ -77,8 +77,8 @@ namespace AudioSensei.ViewModels
         //Tracks
         public int SelectedTrackIndex
         {
-            get => selectedTrackIndex;
-            set => this.RaiseAndSetIfChanged(ref selectedTrackIndex, value, nameof(SelectedTrackIndex));
+            get => _selectedTrackIndex;
+            set => this.RaiseAndSetIfChanged(ref _selectedTrackIndex, value, nameof(SelectedTrackIndex));
         }
         public int CurrentTrackIndex { get; set; } = -1;
 
@@ -108,30 +108,30 @@ namespace AudioSensei.ViewModels
 
         public IAudioStream AudioStream { get; private set; }
 
-        private readonly DispatcherTimer timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
-        private readonly Random random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
+        private readonly DispatcherTimer _timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
+        private readonly Random _random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
 
         private volatile bool _disposed;
 
-        private bool repeat;
-        private bool shuffle;
+        private bool _repeat;
+        private bool _shuffle;
 
         // Pages
-        private int selectedPageIndex;
+        private int _selectedPageIndex;
 
         // Playlist creator
-        private bool isPlaylistCreatorVisible;
-        private string playlistName = "";
-        private string playlistAuthor = "";
-        private string playlistDescription = "";
+        private bool _isPlaylistCreatorVisible;
+        private string _playlistName = "";
+        private string _playlistAuthor = "";
+        private string _playlistDescription = "";
 
         // Playlists
-        private Playlist currentlyVisiblePlaylist = new Playlist("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
-        private Playlist? currentlyPlayedPlaylist;
+        private Playlist _currentlyVisiblePlaylist = new Playlist("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
+        private Playlist? _currentlyPlayedPlaylist;
 
         // Tracks
-        private int selectedTrackIndex = -1;
-        private Track currentTrack;
+        private int _selectedTrackIndex = -1;
+        private Track _currentTrack;
 
         // IPC
         private const int ProtocolVersion = 1;
@@ -164,7 +164,7 @@ namespace AudioSensei.ViewModels
 
             StatusChanged += status =>
             {
-                var t = currentTrack;
+                var t = _currentTrack;
                 switch (status)
                 {
                     case AudioStreamStatus.Invalid:
@@ -179,7 +179,7 @@ namespace AudioSensei.ViewModels
                         break;
                 }
             };
-            timer.Tick += Tick;
+            _timer.Tick += Tick;
 
             ProcessStartupData();
         }
@@ -525,8 +525,8 @@ namespace AudioSensei.ViewModels
         {
             PlayOrPauseCommand = ReactiveCommand.CreateFromTask(PlayOrPause);
             StopCommand = ReactiveCommand.Create(Stop);
-            NextCommand = ReactiveCommand.CreateFromTask(async () => await Next(repeat, shuffle));
-            PreviousCommand = ReactiveCommand.CreateFromTask(async () => await Previous(repeat, shuffle));
+            NextCommand = ReactiveCommand.CreateFromTask(async () => await Next(_repeat, _shuffle));
+            PreviousCommand = ReactiveCommand.CreateFromTask(async () => await Previous(_repeat, _shuffle));
             RepeatCommand = ReactiveCommand.Create(Repeat);
             ShuffleCommand = ReactiveCommand.Create(Shuffle);
             AllTracksCommand = ReactiveCommand.Create(() => { SelectedPageIndex = 0; });
@@ -579,9 +579,9 @@ namespace AudioSensei.ViewModels
 
         private async Task PlayOrPause()
         {
-            currentlyPlayedPlaylist ??= currentlyVisiblePlaylist;
+            _currentlyPlayedPlaylist ??= _currentlyVisiblePlaylist;
 
-            if (currentlyPlayedPlaylist?.Tracks!.Count == 0)
+            if (_currentlyPlayedPlaylist?.Tracks!.Count == 0)
             {
                 return;
             }
@@ -596,16 +596,16 @@ namespace AudioSensei.ViewModels
                 {
                     CurrentTrackIndex = 0;
 
-                    if (currentlyPlayedPlaylist == currentlyVisiblePlaylist)
+                    if (_currentlyPlayedPlaylist == _currentlyVisiblePlaylist)
                     {
                         SelectedTrackIndex = 0;
                     }
                 }
             }
 
-            if (AudioStream != null && currentlyPlayedPlaylist == currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
+            if (AudioStream != null && _currentlyPlayedPlaylist == _currentlyVisiblePlaylist && CurrentTrackIndex == SelectedTrackIndex)
             {
-                var t = currentTrack;
+                var t = _currentTrack;
                 // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
                 switch (AudioStream.Status)
                 {
@@ -614,11 +614,11 @@ namespace AudioSensei.ViewModels
                         _discordPresence.UpdatePresence($"Paused: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
                         if (Dispatcher.UIThread.CheckAccess())
                         {
-                            timer.Stop();
+                            _timer.Stop();
                         }
                         else
                         {
-                            await Dispatcher.UIThread.InvokeAsync(timer.Stop);
+                            await Dispatcher.UIThread.InvokeAsync(_timer.Stop);
                         }
                         return;
                     case AudioStreamStatus.Paused:
@@ -627,19 +627,19 @@ namespace AudioSensei.ViewModels
                         _discordPresence.UpdatePresence($"Playing: {t.Name ?? "Unknown track"}", t.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime - AudioStream.CurrentTime).ToUnixTimeSeconds());
                         if (Dispatcher.UIThread.CheckAccess())
                         {
-                            timer.Start();
+                            _timer.Start();
                         }
                         else
                         {
-                            await Dispatcher.UIThread.InvokeAsync(timer.Start);
+                            await Dispatcher.UIThread.InvokeAsync(_timer.Start);
                         }
                         return;
                 }
             }
 
-            if (currentlyPlayedPlaylist != currentlyVisiblePlaylist)
+            if (_currentlyPlayedPlaylist != _currentlyVisiblePlaylist)
             {
-                currentlyPlayedPlaylist = currentlyVisiblePlaylist;
+                _currentlyPlayedPlaylist = _currentlyVisiblePlaylist;
 
                 if (SelectedTrackIndex == -1)
                 {
@@ -652,7 +652,7 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
 
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
@@ -667,24 +667,24 @@ namespace AudioSensei.ViewModels
             _discordPresence.UpdatePresence(null, null, DateTimeOffset.UtcNow.ToUnixTimeSeconds(), 0);
             if (Dispatcher.UIThread.CheckAccess())
             {
-                timer.Stop();
+                _timer.Stop();
             }
             else
             {
-                Dispatcher.UIThread.Post(timer.Stop);
+                Dispatcher.UIThread.Post(_timer.Stop);
             }
         }
 
         private async Task Previous(bool repeat = true, bool shuffle = false)
         {
-            if (currentlyPlayedPlaylist == null)
+            if (_currentlyPlayedPlaylist == null)
             {
                 return;
             }
 
             if (shuffle)
             {
-                CurrentTrackIndex = random.Next(0, currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0);
+                CurrentTrackIndex = _random.Next(0, _currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0);
             }
             else if (CurrentTrackIndex > 0)
             {
@@ -692,19 +692,19 @@ namespace AudioSensei.ViewModels
             }
             else if (repeat)
             {
-                CurrentTrackIndex = currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0;
+                CurrentTrackIndex = _currentlyPlayedPlaylist?.Tracks?.Count - 1 ?? 0;
             }
             else
             {
                 return;
             }
 
-            if (currentlyPlayedPlaylist == currentlyVisiblePlaylist)
+            if (_currentlyPlayedPlaylist == _currentlyVisiblePlaylist)
             {
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
 
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
@@ -714,16 +714,16 @@ namespace AudioSensei.ViewModels
 
         private async Task Next(bool repeat = true, bool shuffle = false)
         {
-            if (currentlyPlayedPlaylist == null)
+            if (_currentlyPlayedPlaylist == null)
             {
                 return;
             }
 
             if (shuffle)
             {
-                CurrentTrackIndex = random.Next(0, (currentlyPlayedPlaylist?.Tracks?.Count ?? 0) - 1);
+                CurrentTrackIndex = _random.Next(0, (_currentlyPlayedPlaylist?.Tracks?.Count ?? 0) - 1);
             }
-            else if (CurrentTrackIndex < (currentlyPlayedPlaylist?.Tracks?.Count ?? 0) - 1)
+            else if (CurrentTrackIndex < (_currentlyPlayedPlaylist?.Tracks?.Count ?? 0) - 1)
             {
                 CurrentTrackIndex++;
             }
@@ -736,12 +736,12 @@ namespace AudioSensei.ViewModels
                 return;
             }
 
-            if (currentlyPlayedPlaylist == currentlyVisiblePlaylist)
+            if (_currentlyPlayedPlaylist == _currentlyVisiblePlaylist)
             {
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            var track = currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
+            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
 
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
@@ -751,35 +751,35 @@ namespace AudioSensei.ViewModels
 
         private void Shuffle()
         {
-            if (shuffle)
+            if (_shuffle)
             {
-                shuffle = false;
+                _shuffle = false;
             }
             else
             {
-                shuffle = true;
-                repeat = false;
+                _shuffle = true;
+                _repeat = false;
             }
         }
 
         private void Repeat()
         {
-            if (repeat)
+            if (_repeat)
             {
-                repeat = false;
+                _repeat = false;
             }
             else
             {
-                repeat = true;
-                shuffle = false;
+                _repeat = true;
+                _shuffle = false;
             }
         }
 
         private void CreatePlaylist()
         {
-            if (!string.IsNullOrWhiteSpace(playlistName))
+            if (!string.IsNullOrWhiteSpace(_playlistName))
             {
-                Playlists.Add(new Playlist(playlistName, Guid.NewGuid(), playlistAuthor, playlistDescription, new ObservableCollection<Track>()));
+                Playlists.Add(new Playlist(_playlistName, Guid.NewGuid(), _playlistAuthor, _playlistDescription, new ObservableCollection<Track>()));
             }
 
             CancelPlaylistCreation();
@@ -810,17 +810,17 @@ namespace AudioSensei.ViewModels
                 _ => throw new NotImplementedException()
             };
 
-            currentTrack = track;
+            _currentTrack = track;
 
             var startTimestamp = DateTimeOffset.UtcNow;
             _discordPresence.UpdatePresence($"Playing: {track.Name ?? "Unknown track"}", track.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime).ToUnixTimeSeconds());
             if (Dispatcher.UIThread.CheckAccess())
             {
-                timer.Start();
+                _timer.Start();
             }
             else
             {
-                await Dispatcher.UIThread.InvokeAsync(timer.Start);
+                await Dispatcher.UIThread.InvokeAsync(_timer.Start);
             }
         }
 
