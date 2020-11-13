@@ -5,7 +5,6 @@ using System.Threading;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
-using Serilog.Debugging;
 using Serilog.Events;
 
 namespace AudioSensei
