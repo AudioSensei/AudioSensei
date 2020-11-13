@@ -7,6 +7,10 @@ using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 
+#if !WINDOWS
+using Serilog.Debugging;
+#endif
+
 namespace AudioSensei
 {
     public class MessageBoxSink : ILogEventSink
