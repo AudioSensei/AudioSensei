@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>8</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishReadyToRun>true</PublishReadyToRun>
@@ -36,6 +35,15 @@
     <DefineConstants Condition="'$(TargetArch)' == '' Or ('$(TargetArch)' != 'X86' And '$(TargetArch)' != 'X64' And '$(TargetArch)' != 'ARM' And '$(TargetArch)' != 'ARM64')">$(DefineConstants);INVALID_ARCH</DefineConstants>
     <DefineConstants Condition="'$(TargetOs)' != '' And ('$(TargetOs)' == 'WINDOWS' Or '$(TargetOs)' == 'LINUX' Or '$(TargetOs)' == 'OSX')">$(DefineConstants);$(TargetOs)</DefineConstants>
     <DefineConstants Condition="'$(TargetArch)' != '' And ('$(TargetArch)' == 'X86' Or '$(TargetArch)' == 'X64' Or '$(TargetArch)' == 'ARM' Or '$(TargetArch)' == 'ARM64')">$(DefineConstants);$(TargetArch)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetOs)' == 'WINDOWS'">
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetPlatformVersion>7.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>7.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetOs)' != 'WINDOWS'">
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">

@@ -42,8 +42,10 @@ namespace AudioSensei.Bass
         private readonly SyncHandle _restartSync;
         private readonly object _freeLock = new object();
 
+        // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
         private readonly BassNative.SyncProc _failProc;
         private readonly BassNative.SyncProc _freeProc;
+        // ReSharper restore PrivateFieldCanBeConvertedToLocalVariable
 
         internal BassStream(StreamHandle handle)
         {
@@ -69,7 +71,9 @@ namespace AudioSensei.Bass
                 _streamFreed = true;
                 if (Monitor.TryEnter(_freeLock))
                 {
+#pragma warning disable CA1816
                     GC.SuppressFinalize(this);
+#pragma warning restore CA1816
                     _disposed = true;
                     Monitor.Exit(_freeLock);
                 }

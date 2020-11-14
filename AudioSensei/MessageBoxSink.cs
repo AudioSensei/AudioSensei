@@ -5,8 +5,11 @@ using System.Threading;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Core;
-using Serilog.Debugging;
 using Serilog.Events;
+
+#if !WINDOWS
+using Serilog.Debugging;
+#endif
 
 namespace AudioSensei
 {

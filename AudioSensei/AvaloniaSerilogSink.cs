@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Logging;
+﻿using Avalonia.Logging;
 using JetBrains.Annotations;
 using Serilog;
 

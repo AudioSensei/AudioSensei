@@ -7,9 +7,9 @@ namespace AudioSensei.Bass
 {
     internal class BassPluginManifest
     {
-        [NotNull]
+        [CanBeNull]
         public string Name { get; set; }
-        [NotNull]
+        [CanBeNull]
         public Dictionary<string, Dictionary<string, string>> Library { get; set; }
 
         public static BassPluginManifest Load([NotNull] string filePath)
