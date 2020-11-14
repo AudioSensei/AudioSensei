@@ -78,7 +78,7 @@ namespace AudioSensei.Bass.Native
                     foreach (var file in Directory.EnumerateFiles(
                         Directory.Exists("BassPlugins")
                             ? "BassPlugins"
-                            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory ?? "", "BassPlugins"), filter,
+                            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BassPlugins"), filter,
                         SearchOption.AllDirectories))
                     {
                         var manifest = BassPluginManifest.Load(file);

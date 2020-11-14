@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using AudioSensei.Bass;
 using AudioSensei.Configuration;
@@ -10,7 +9,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Serilog;
-using Serilog.Events;
 using Serilog.Sinks.File.GZip;
 
 #if LINUX
@@ -26,7 +24,7 @@ namespace AudioSensei
         public static Window MainWindow { get; private set; }
         public static string ApplicationDataPath { get; }
 
-        private AudioSenseiConfiguration configuration;
+        private AudioSenseiConfiguration _configuration;
 
         static App()
         {
@@ -40,7 +38,7 @@ namespace AudioSensei
 
         public override void Initialize()
         {
-            configuration = AudioSenseiConfiguration.LoadOrCreate(Path.Combine(ApplicationDataPath, "config.json"));
+            _configuration = AudioSenseiConfiguration.LoadOrCreate(Path.Combine(ApplicationDataPath, "config.json"));
         
             string directory = Path.Combine(ApplicationDataPath, "logs");
             string latestLogPath = Path.Combine(directory, "latest.log");
@@ -60,7 +58,7 @@ namespace AudioSensei
             }
             catch (Exception ex)
             {
-                latestLogPath = Path.Combine(directory, $"{Process.GetCurrentProcess().Id}-latest.log");
+                latestLogPath = Path.Combine(directory, $"{Environment.ProcessId}-latest.log");
                 if (File.Exists(latestLogPath))
                 {
                     File.Delete(latestLogPath);
@@ -69,12 +67,12 @@ namespace AudioSensei
             }
             
             var loggerConfiguration = new LoggerConfiguration()
-                .MinimumLevel.Is(configuration.General.LoggerMinimumLevel)
-                .WriteTo.File(latestLogPath, outputTemplate: configuration.General.LogTemplate)
-                .WriteTo.File(rollingLogPath, outputTemplate: configuration.General.LogTemplate, buffered: true, hooks: new GZipHooks());
+                .MinimumLevel.Is(_configuration.General.LoggerMinimumLevel)
+                .WriteTo.File(latestLogPath, outputTemplate: _configuration.General.LogTemplate)
+                .WriteTo.File(rollingLogPath, outputTemplate: _configuration.General.LogTemplate, buffered: true, hooks: new GZipHooks());
                 
-            if (configuration.General.EnableMessageBoxSink)
-                loggerConfiguration.WriteTo.MessageBox(restrictedToMinimumLevel: configuration.General.MessageBoxSinkMinimumLevel);
+            if (_configuration.General.EnableMessageBoxSink)
+                loggerConfiguration.WriteTo.MessageBox(restrictedToMinimumLevel: _configuration.General.MessageBoxSinkMinimumLevel);
                 
             var logger = loggerConfiguration.CreateLogger();
 
@@ -143,7 +141,7 @@ namespace AudioSensei
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 MainWindow = new MainWindow();
-                MainWindow.DataContext = new MainWindowViewModel(new BassAudioBackend(configuration.Bass, MainWindow.PlatformImpl.Handle.Handle), configuration.Player);
+                MainWindow.DataContext = new MainWindowViewModel(new BassAudioBackend(_configuration.Bass, MainWindow.PlatformImpl.Handle.Handle), _configuration.Player);
                 desktop.MainWindow = MainWindow;
                 desktop.Exit += (sender, args) => Program.TriggerExit();
             }

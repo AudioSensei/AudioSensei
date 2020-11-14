@@ -33,15 +33,12 @@ namespace AudioSensei.Views
 
             if (dragEventArgs.Data.Contains(DataFormats.FileNames))
             {
-                if (dataContext.CurrentlyVisiblePlaylist != null)
+                foreach (var fileName in dragEventArgs.Data.GetFileNames())
                 {
-                    foreach (var fileName in dragEventArgs.Data.GetFileNames())
-                    {
-                        var track = new Track(Source.File, fileName);
-                        track.LoadMetadataFromFile();
-                        dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
-                        dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
-                    }
+                    var track = new Track(Source.File, fileName);
+                    track.LoadMetadataFromFile();
+                    dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
+                    dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                 }
             }
             
