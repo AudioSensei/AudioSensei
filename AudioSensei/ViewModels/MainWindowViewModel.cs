@@ -657,6 +657,10 @@ namespace AudioSensei.ViewModels
                     CurrentTrackIndex = SelectedTrackIndex;
                 }
             }
+            else
+            {
+                CurrentTrackIndex = SelectedTrackIndex;
+            }
 
             var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
 
