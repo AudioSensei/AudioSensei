@@ -820,7 +820,7 @@ namespace AudioSensei.ViewModels
             AudioStream = track.Source switch
             {
                 Source.File => AudioBackend.Play(new Uri(track.Url)),
-                Source.YouTube => (await YoutubePlayer.Play(track.Url)).AudioStream,
+                Source.YouTube => await YoutubePlayer.Play(track.Url),
                 _ => throw new NotImplementedException()
             };
 
