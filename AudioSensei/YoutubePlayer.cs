@@ -28,27 +28,20 @@ namespace AudioSensei
             return new YoutubeInfo
             {
                 Video = video,
-                Captions = captionManifest.Tracks,
-                Url = null,
-                AudioStream = null
+                Captions = captionManifest.Tracks
             };
         }
 
-        public async Task<YoutubeInfo> Play([NotNull] string url)
+        public async Task<IAudioStream> Play([NotNull] string url)
         {
-            var info = await GetInfo(url);
-            var streamManifest = await _client.Videos.Streams.GetManifestAsync(info.Video.Id);
-            info.Url = new Uri(streamManifest.GetAudioOnly().WithHighestBitrate().Url);
-            info.AudioStream = _backend.Play(info.Url);
-            return info;
+            var streamManifest = await _client.Videos.Streams.GetManifestAsync(url);
+            return _backend.Play(new Uri(streamManifest.GetAudioOnly().WithHighestBitrate().Url));
         }
 
         public struct YoutubeInfo
         {
             public Video Video;
             public IReadOnlyList<ClosedCaptionTrackInfo> Captions;
-            public Uri Url;
-            public IAudioStream AudioStream;
         }
     }
 }
