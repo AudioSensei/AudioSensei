@@ -553,22 +553,24 @@ namespace AudioSensei.ViewModels
             {
                 var playlist = Playlist.Load(file);
 
-                for (int i = 0; i < playlist.Tracks.Count; i++)
+                foreach (var track in playlist.Tracks)
                 {
-                    var track = playlist.Tracks[i];
-
-                    switch (track.Source)
+                    Task.Run(async () => 
                     {
-                        case Source.File:
-                            track.LoadMetadataFromFile();
-                            break;
-                        case Source.YouTube:
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
-
-                    playlist.Tracks[i] = track;
+                        switch (track.Source)
+                        {
+                            case Source.File:
+                                track.LoadMetadataFromFile();
+                                break;
+                            case Source.YouTube:
+                                var info = await YoutubePlayer.GetInfo(track.Url);
+                                track.Name = info.Video.Title;
+                                track.Author = info.Video.Author;
+                                break;
+                            default:
+                                throw new NotImplementedException();
+                        }
+                    });
                 }
 
                 Playlists.Add(new PlaylistViewModel 
@@ -664,7 +666,7 @@ namespace AudioSensei.ViewModels
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
 
-            await Play(track.Value);
+            await Play(track);
         }
 
         private void Stop()
@@ -716,7 +718,7 @@ namespace AudioSensei.ViewModels
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
 
-            await Play(track.Value);
+            await Play(track);
         }
 
         private async Task Next(bool repeat = true, bool shuffle = false)
@@ -753,7 +755,7 @@ namespace AudioSensei.ViewModels
             if (track == null)
                 throw new ArgumentNullException(nameof(track));
 
-            await Play(track.Value);
+            await Play(track);
         }
 
         private void Shuffle()
@@ -819,7 +821,7 @@ namespace AudioSensei.ViewModels
             AudioStream = track.Source switch
             {
                 Source.File => AudioBackend.Play(new Uri(track.Url)),
-                Source.YouTube => (await YoutubePlayer.Play(track.Url)).AudioStream,
+                Source.YouTube => await YoutubePlayer.Play(track.Url),
                 _ => throw new NotImplementedException()
             };
 
