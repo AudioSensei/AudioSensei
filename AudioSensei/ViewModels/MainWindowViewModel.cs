@@ -660,12 +660,7 @@ namespace AudioSensei.ViewModels
                 }
             }
 
-            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
-
-            if (track == null)
-                throw new ArgumentNullException(nameof(track));
-
-            await Play(track);
+            await Play(_currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex]);
         }
 
         private void Stop()
@@ -712,12 +707,7 @@ namespace AudioSensei.ViewModels
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
-
-            if (track == null)
-                throw new ArgumentNullException(nameof(track));
-
-            await Play(track);
+            await Play(_currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex]);
         }
 
         private async Task Next(bool repeat = true, bool shuffle = false)
@@ -749,12 +739,7 @@ namespace AudioSensei.ViewModels
                 SelectedTrackIndex = CurrentTrackIndex;
             }
 
-            var track = _currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex];
-
-            if (track == null)
-                throw new ArgumentNullException(nameof(track));
-
-            await Play(track);
+            await Play(_currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex]);
         }
 
         private void Shuffle()
@@ -814,6 +799,9 @@ namespace AudioSensei.ViewModels
 
         private async Task Play(Track track)
         {
+            if (track == null)
+                throw new ArgumentNullException(nameof(track));
+
             AudioStream?.Dispose();
             AudioStream = null;
 
@@ -825,6 +813,11 @@ namespace AudioSensei.ViewModels
             };
 
             _currentTrack = track;
+
+            if (AudioStream == null)
+            {
+                return;
+            }
 
             var startTimestamp = DateTimeOffset.UtcNow;
             _discordPresence.UpdatePresence($"Playing: {track.Name ?? "Unknown track"}", track.Author ?? "Unknown author", startTimestamp.ToUnixTimeSeconds(), (startTimestamp + AudioStream.TotalTime).ToUnixTimeSeconds());
