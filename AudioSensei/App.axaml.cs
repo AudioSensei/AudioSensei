@@ -42,7 +42,7 @@ namespace AudioSensei
         
             string directory = Path.Combine(ApplicationDataPath, "logs");
             string latestLogPath = Path.Combine(directory, "latest.log");
-            string rollingLogPath = Path.Combine(directory, $"log-{DateTimeOffset.Now:configuration.General.LogTimeFormat}.log.gz");
+            string rollingLogPath = Path.Combine(directory, $"log-{DateTimeOffset.Now.ToString(_configuration.General.LogTimeFormat)}.log.gz");
 
             if (!Directory.Exists(directory))
             {
