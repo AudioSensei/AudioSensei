@@ -1,6 +1,6 @@
 ﻿namespace AudioSensei.Bass.Native.Effects
 {
-    internal struct BASS_FX_DX8_CHORUS
+    internal struct BASS_FX_DX8_CHORUS : IEffect
     {
         public float fWetDryMix;
         public float fDepth;

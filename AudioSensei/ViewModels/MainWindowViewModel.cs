@@ -15,6 +15,7 @@ using AudioSensei.Configuration;
 using AudioSensei.Crypto;
 using AudioSensei.Discord;
 using AudioSensei.Models;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using JetBrains.Annotations;
 using ReactiveUI;
@@ -103,6 +104,7 @@ namespace AudioSensei.ViewModels
         public ReactiveCommand<Unit, Unit> CreatePlaylistCommand { get; private set; }
         public ReactiveCommand<Unit, Unit> CancelPlaylistCreationCommand { get; private set; }
         public ReactiveCommand<Guid, Unit> SelectPlaylistCommand { get; private set; }
+        public ReactiveCommand<Unit, Unit> OpenCloseEqualizerCommand { get; private set; }
 
         public IAudioBackend AudioBackend { get; }
         public YoutubePlayer YoutubePlayer { get; }
@@ -117,6 +119,8 @@ namespace AudioSensei.ViewModels
 
         private bool _repeat;
         private bool _shuffle;
+
+        private Views.EqualizerWindow _equalizer;
 
         // Pages
         private int _selectedPageIndex;
@@ -160,6 +164,9 @@ namespace AudioSensei.ViewModels
             _statusThread = new Thread(StatusChecker)
             { IsBackground = true, Priority = ThreadPriority.BelowNormal };
             _statusThread.Start();
+
+            if (_equalizer == null)
+                _equalizer = GetEqualizerWindow();
 
             InitializeCommands();
             LoadPlaylists();
@@ -538,6 +545,7 @@ namespace AudioSensei.ViewModels
             CreatePlaylistCommand = ReactiveCommand.Create(CreatePlaylist);
             CancelPlaylistCreationCommand = ReactiveCommand.Create(CancelPlaylistCreation);
             SelectPlaylistCommand = ReactiveCommand.Create<Guid>(SelectPlaylist);
+            OpenCloseEqualizerCommand = ReactiveCommand.Create(OpenCloseEqualizer);
         }
 
         private void LoadPlaylists()
@@ -661,6 +669,11 @@ namespace AudioSensei.ViewModels
             }
 
             await Play(_currentlyPlayedPlaylist?.Tracks?[CurrentTrackIndex]);
+
+            if (AudioStream != null)
+            {
+                ApplyAudioSourceToEqualizer();
+            }
         }
 
         private void Stop()
@@ -846,6 +859,32 @@ namespace AudioSensei.ViewModels
             {
                 await Next();
             }
+        }
+
+        private void OpenCloseEqualizer()
+        {
+            if (_equalizer == null)
+            {
+                _equalizer = GetEqualizerWindow();
+            }
+
+            _equalizer.OpenClose();
+        }
+
+        private Views.EqualizerWindow GetEqualizerWindow()
+        {
+            var window = new Views.EqualizerWindow();
+            window.DataContext = new EqualizerWindowViewModel();
+
+            return window;
+        }
+
+        private void ApplyAudioSourceToEqualizer()
+        {
+            var equalizerWindowViewModel = _equalizer.DataContext as EqualizerWindowViewModel;
+
+            if (!equalizerWindowViewModel.IsEffectApplied())
+                equalizerWindowViewModel.AddAudioEffect(AudioStream);
         }
     }
 }

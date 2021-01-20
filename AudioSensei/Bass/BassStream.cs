@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using AudioSensei.Bass.Native;
 using AudioSensei.Bass.Native.Handles;
@@ -38,6 +39,7 @@ namespace AudioSensei.Bass
         private volatile bool _streamFreed;
 
         public StreamHandle Handle { get; }
+
         protected readonly BassChannelInfo Info;
         private readonly SyncHandle _restartSync;
         private readonly object _freeLock = new object();
@@ -93,6 +95,16 @@ namespace AudioSensei.Bass
         public void Pause()
         {
             BassNative.Singleton.PauseChannel(Handle);
+        }
+
+        public FxHandle AddEffect(BassModEffect effect, int priority = 0)
+        { 
+            return BassNative.Singleton.SetChannelFX(Handle, effect, priority);
+        }
+
+        public void SetEffectParameters(FxHandle effect, IEffect parameters)
+        {
+            BassNative.Singleton.SetEffectParameters(effect, parameters);
         }
 
         private void FreeStream()

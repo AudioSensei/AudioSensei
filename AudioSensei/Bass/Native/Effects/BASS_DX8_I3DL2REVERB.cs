@@ -1,6 +1,6 @@
 ﻿namespace AudioSensei.Bass.Native.Effects
 {
-    internal struct BASS_DX8_I3DL2REVERB
+    internal struct BASS_DX8_I3DL2REVERB : IEffect
     {
         public int lRoom;
         public int lRoomHF;

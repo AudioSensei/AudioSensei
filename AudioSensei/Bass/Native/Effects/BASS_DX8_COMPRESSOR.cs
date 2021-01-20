@@ -1,6 +1,6 @@
 ﻿namespace AudioSensei.Bass.Native.Effects
 {
-    internal struct BASS_DX8_COMPRESSOR
+    internal struct BASS_DX8_COMPRESSOR : IEffect
     {
         public float fGain;
         public float fAttack;

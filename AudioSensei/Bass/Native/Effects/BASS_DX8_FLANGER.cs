@@ -1,6 +1,6 @@
 ﻿namespace AudioSensei.Bass.Native.Effects
 {
-    internal struct BASS_DX8_FLANGER
+    internal struct BASS_DX8_FLANGER : IEffect
     {
         public float fWetDryMix;
         public float fDepth;

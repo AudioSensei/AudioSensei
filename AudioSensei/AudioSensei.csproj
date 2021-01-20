@@ -101,6 +101,11 @@
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).so" Condition="'$(TargetOs)' == 'LINUX'" CopyToOutputDirectory="Always" />
     <None Include="$(ProjectDir)BassPlugins\**\*.$(TargetArch).dylib" Condition="'$(TargetOs)' == 'OSX'" CopyToOutputDirectory="Always" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\EqualizerWindow.axaml.cs">
+      <DependentUpon>EqualizerWindow.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
   
   <Target Name="CopyReferenceFilesBuild" BeforeTargets="Build">
     <ItemGroup>

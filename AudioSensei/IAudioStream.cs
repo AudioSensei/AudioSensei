@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using AudioSensei.Bass;
+using AudioSensei.Bass.Native.Handles;
 
 namespace AudioSensei
 {
@@ -11,5 +14,7 @@ namespace AudioSensei
 
         void Resume();
         void Pause();
+        FxHandle AddEffect(BassModEffect effect, int priority);
+        void SetEffectParameters(FxHandle effect, IEffect parameters);
     }
 }

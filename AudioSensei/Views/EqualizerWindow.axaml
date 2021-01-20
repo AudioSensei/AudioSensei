@@ -1,0 +1,92 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AudioSensei.ViewModels"
+        xmlns:m="using:AudioSensei.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="300"
+        x:Class="AudioSensei.Views.EqualizerWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="AudioSensei Equalizer"
+        x:CompileBindings='True'
+        CanResize="False"
+        Width="370"
+        Height="230"
+        x:DataType="vm:EqualizerWindowViewModel">
+  <StackPanel Orientation="Horizontal">
+    <StackPanel Margin="18, 0, 15, 0">
+      <Slider Name="EqualizerSlider80Hz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">80Hz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider250Hz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">250Hz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider500Hz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">500Hz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider1kHz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">1kHz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider2kHz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left" >2kHz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider4kHz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">4kHz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider8kHz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">8kHz</TextBlock>
+    </StackPanel>
+    <StackPanel Margin="0, 0, 15, 0">
+      <Slider Name="EqualizerSlider16kHz"
+      Height="200" Orientation="Vertical" HorizontalAlignment="Left"
+      Value="0" Minimum="-15" Maximum="15"
+      SmallChange="0.01" LargeChange="0.1"
+      TickPlacement="BottomRight" TickFrequency="10"/>
+
+      <TextBlock TextAlignment="Left">16kHz</TextBlock>
+    </StackPanel>
+  </StackPanel>
+</Window>

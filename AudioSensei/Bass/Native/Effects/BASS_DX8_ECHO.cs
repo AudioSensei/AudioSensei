@@ -1,6 +1,6 @@
 ﻿namespace AudioSensei.Bass.Native.Effects
 {
-    internal struct BASS_DX8_ECHO
+    internal struct BASS_DX8_ECHO : IEffect
     {
         public float fWetDryMix;
         public float fFeedback;

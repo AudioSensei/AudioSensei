@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace AudioSensei.Bass.Native.Handles
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal readonly struct FxHandle : IEquatable<FxHandle>
+    public readonly struct FxHandle : IEquatable<FxHandle>
     {
         public static readonly FxHandle Null = new FxHandle(0);
 

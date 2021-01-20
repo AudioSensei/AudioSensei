@@ -249,6 +249,66 @@ namespace AudioSensei.Bass.Native
             return handle;
         }
 
+        public FxHandle SetChannelFX(StreamHandle handle, BassModEffect effect, int priority)
+        {
+            var HFX = BASS_ChannelSetFX(handle, effect, priority);
+
+            if (HFX == FxHandle.Null)
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+
+            return HFX;
+        }
+
+        public FxHandle SetChannelFX(MusicHandle handle, BassModEffect effect, int priority)
+        {
+            var HFX = BASS_ChannelSetFX(handle, effect, priority);
+
+            if (HFX == FxHandle.Null)
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+
+            return HFX;
+        }
+
+        public FxHandle SetChannelFX(RecordHandle handle, BassModEffect effect, int priority)
+        {
+            var HFX = BASS_ChannelSetFX(handle, effect, priority);
+
+            if (HFX == FxHandle.Null)
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+
+            return HFX;
+        }
+
+        public void RemoveChannelFX(StreamHandle handle, FxHandle effect)
+        {
+            if (!BASS_ChannelRemoveFX(handle, effect))
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+        }
+
+        public void RemoveChannelFX(MusicHandle handle, FxHandle effect)
+        {
+            if (!BASS_ChannelRemoveFX(handle, effect))
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+        }
+
+        public void RemoveChannelFX(RecordHandle handle, FxHandle effect)
+        {
+            if (!BASS_ChannelRemoveFX(handle, effect))
+            {
+                throw new BassException("ChannelRemoveFX failed");
+            }
+        }
+
         public void FreeStream(StreamHandle handle)
         {
             if (!BASS_StreamFree(handle))
@@ -425,6 +485,22 @@ namespace AudioSensei.Bass.Native
             }
         }
 
+        public void SetEffectParameters(FxHandle effect, IEffect parameters)
+        {
+            if (!BASS_FXSetParameters(effect, parameters))
+            {
+                throw new BassException("FXSetParameters failed");
+            }
+        }
+
+        public void SetEffectPriority(DspHandle handle, int priority)
+        {
+            if (!BASS_FXSetPriority(handle, priority))
+            {
+                throw new BassException("FXSetParameters failed");
+            }
+        }
+
         public BassChannelInfo GetChannelInfo(ChannelHandle handle)
         {
             if (!BASS_ChannelGetInfo(handle, out var info))
@@ -463,6 +539,16 @@ namespace AudioSensei.Bass.Native
             }
 
             return info;
+        }
+
+        public IEffect GetEffectParameters(FxHandle handle)
+        {
+            if (!BASS_FXGetParameters(handle, out var parameters))
+            {
+                throw new BassException("FXGetParameters failed");
+            }
+
+            return parameters;
         }
 
         public ulong GetChannelLength(ChannelHandle handle, LengthMode mode)
@@ -742,6 +828,9 @@ namespace AudioSensei.Bass.Native
         private static extern bool BASS_ChannelGetInfo(RecordHandle handle, out BassChannelInfo info);
 
         [DllImport(Bass)]
+        private static extern bool BASS_FXGetParameters(FxHandle effect, out IEffect parameters);
+
+        [DllImport(Bass)]
         private static extern ulong BASS_ChannelGetLength(ChannelHandle handle, LengthMode mode);
 
         [DllImport(Bass)]
@@ -788,6 +877,30 @@ namespace AudioSensei.Bass.Native
 
         [DllImport(Bass)]
         private static extern bool BASS_ChannelSetAttribute(RecordHandle handle, ChannelAttribute attribute, float value);
+
+        [DllImport(Bass)]
+        private static extern FxHandle BASS_ChannelSetFX(StreamHandle handle, BassModEffect effect, int priority);
+
+        [DllImport(Bass)]
+        private static extern FxHandle BASS_ChannelSetFX(MusicHandle handle, BassModEffect effect, int priority);
+
+        [DllImport(Bass)]
+        private static extern FxHandle BASS_ChannelSetFX(RecordHandle handle, BassModEffect effect, int priority);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelRemoveFX(StreamHandle handle, FxHandle effect);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelRemoveFX(MusicHandle handle, FxHandle effect);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_ChannelRemoveFX(RecordHandle handle, FxHandle effect);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_FXSetParameters(FxHandle effect, IEffect parameters);
+
+        [DllImport(Bass)]
+        private static extern bool BASS_FXSetPriority(DspHandle handle, int priority);
 
         [DllImport(Bass)]
         private static extern double BASS_ChannelBytes2Seconds(ChannelHandle handle, ulong position);
