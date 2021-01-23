@@ -38,9 +38,9 @@ namespace AudioSensei.Bass.Native
         private static bool _invalidState;
 
         public readonly ConcurrentDictionary<PluginHandle, (BassPluginManifest manifest, BassPluginInfo info)> Plugins;
-        
+
         private readonly BassConfiguration _bassConfiguration;
-        
+
         private readonly BassInitFlags _flags;
         private readonly IntPtr _windowHandle;
 
