@@ -6,7 +6,7 @@ namespace AudioSensei.Bass.Native.Handles
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct SyncHandle : IEquatable<SyncHandle>
     {
-        public static readonly SyncHandle Null = new SyncHandle(0);
+        public static readonly SyncHandle Null = new(0);
 
         private readonly uint handle;
         private SyncHandle(uint handle) => this.handle = handle;

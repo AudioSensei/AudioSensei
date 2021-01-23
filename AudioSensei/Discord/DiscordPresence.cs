@@ -11,8 +11,8 @@ namespace AudioSensei.Discord
         private volatile bool _disposed;
         private readonly Thread _updateThread;
 
-        private static readonly object DisposeLock = new object();
-        private static readonly object PresenceLock = new object();
+        private static readonly object DisposeLock = new();
+        private static readonly object PresenceLock = new();
 
         // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
         private readonly DiscordEventHandlers _handlers;

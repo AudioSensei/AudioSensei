@@ -40,7 +40,7 @@ namespace AudioSensei.Bass
         public StreamHandle Handle { get; }
         protected readonly BassChannelInfo Info;
         private readonly SyncHandle _restartSync;
-        private readonly object _freeLock = new object();
+        private readonly object _freeLock = new();
 
         // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
         private readonly BassNative.SyncProc _failProc;

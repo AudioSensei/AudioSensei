@@ -33,7 +33,7 @@ namespace AudioSensei.Bass.Native
         private const uint PluginUnicodeFlag = 0;
 #endif
 
-        private static readonly object LoadLock = new object();
+        private static readonly object LoadLock = new();
         public static BassNative Singleton { get; private set; }
         private static bool _invalidState;
 
