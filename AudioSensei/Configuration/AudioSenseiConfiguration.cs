@@ -12,7 +12,7 @@ namespace AudioSensei.Configuration
         public PlayerConfiguration Player { get; set; } = new PlayerConfiguration();
         [NotNull]
         public BassConfiguration Bass { get; set; } = new BassConfiguration();
-    
+
         [NotNull]
         [Pure]
         private static AudioSenseiConfiguration Create([NotNull] string filePath)

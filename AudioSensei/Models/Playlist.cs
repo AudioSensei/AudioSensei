@@ -53,7 +53,7 @@ namespace AudioSensei.Models
             _name = null;
             _author = null;
             _description = null;
-            
+
             UniqueId = uniqueId;
             Tracks = tracks;
             PropertyChanged = null;
