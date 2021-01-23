@@ -42,7 +42,7 @@ namespace AudioSensei.Views
                     dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                 }
             }
-            
+
             if (dragEventArgs.Data.Contains(DataFormats.Text))
             {
                 try

@@ -155,7 +155,7 @@ namespace AudioSensei.ViewModels
 
             AudioBackend = audioBackend;
             AudioBackend.Volume = playerConfiguration.DefaultVolume;
-            
+
             YoutubePlayer = new YoutubePlayer(audioBackend);
             _discordPresence = new DiscordPresence("668517213388668939");
             _statusThread = new Thread(StatusChecker)
@@ -555,7 +555,7 @@ namespace AudioSensei.ViewModels
 
                 foreach (var track in playlist.Tracks)
                 {
-                    Task.Run(async () => 
+                    Task.Run(async () =>
                     {
                         switch (track.Source)
                         {
@@ -573,7 +573,7 @@ namespace AudioSensei.ViewModels
                     });
                 }
 
-                Playlists.Add(new PlaylistViewModel 
+                Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,
                     Command = SelectPlaylistCommand,
@@ -773,8 +773,7 @@ namespace AudioSensei.ViewModels
         {
             if (!string.IsNullOrWhiteSpace(_playlistName))
             {
-                var playlist = new Playlist(playlistName, Guid.NewGuid(), playlistAuthor, playlistDescription, new ObservableCollection<Track>());
-                
+                var playlist = new Playlist(_playlistName, Guid.NewGuid(), _playlistAuthor, _playlistDescription, new ObservableCollection<Track>());
                 Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,
