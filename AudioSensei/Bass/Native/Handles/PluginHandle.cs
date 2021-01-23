@@ -6,7 +6,7 @@ namespace AudioSensei.Bass.Native.Handles
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct PluginHandle : IEquatable<PluginHandle>
     {
-        public static readonly PluginHandle Null = new PluginHandle(0);
+        public static readonly PluginHandle Null = new(0);
 
         private readonly uint handle;
         private PluginHandle(uint handle) => this.handle = handle;

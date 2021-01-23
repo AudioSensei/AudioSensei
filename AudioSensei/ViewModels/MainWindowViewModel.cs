@@ -54,8 +54,7 @@ namespace AudioSensei.ViewModels
         }
 
         // Playlists
-        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } =
-            new ObservableCollection<PlaylistViewModel>();
+        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } = new();
 
         public Playlist? CurrentlyPlayedPlaylist
         {
@@ -110,8 +109,8 @@ namespace AudioSensei.ViewModels
 
         public IAudioStream AudioStream { get; private set; }
 
-        private readonly DispatcherTimer _timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
-        private readonly Random _random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
+        private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100.0) };
+        private readonly Random _random = new(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
 
         private volatile bool _disposed;
 
@@ -128,7 +127,7 @@ namespace AudioSensei.ViewModels
         private string _playlistDescription = "";
 
         // Playlists
-        private Playlist _currentlyVisiblePlaylist = new Playlist("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
+        private Playlist _currentlyVisiblePlaylist = new("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
         private Playlist? _currentlyPlayedPlaylist;
 
         // Tracks
@@ -139,7 +138,7 @@ namespace AudioSensei.ViewModels
         private const int ProtocolVersion = 1;
         private readonly ulong _typeHash;
         private TcpListener _playbackServer;
-        private readonly object _playbackServerLock = new object();
+        private readonly object _playbackServerLock = new();
 
         // Status update
         private readonly Thread _statusThread;
