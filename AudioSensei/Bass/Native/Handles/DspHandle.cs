@@ -6,7 +6,7 @@ namespace AudioSensei.Bass.Native.Handles
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct DspHandle : IEquatable<DspHandle>
     {
-        public static readonly DspHandle Null = new DspHandle(0);
+        public static readonly DspHandle Null = new(0);
 
         private readonly uint handle;
         private DspHandle(uint handle) => this.handle = handle;
