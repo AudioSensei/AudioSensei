@@ -39,7 +39,7 @@ namespace AudioSensei
         public override void Initialize()
         {
             _configuration = AudioSenseiConfiguration.LoadOrCreate(Path.Combine(ApplicationDataPath, "config.json"));
-        
+
             string directory = Path.Combine(ApplicationDataPath, "logs");
             string latestLogPath = Path.Combine(directory, "latest.log");
             string rollingLogPath = Path.Combine(directory, $"log-{DateTimeOffset.Now.ToString(_configuration.General.LogTimeFormat)}.log.gz");
@@ -65,15 +65,15 @@ namespace AudioSensei
                 }
                 Log.Information(ex, $"Failed to delete the latest log, using {latestLogPath} instead");
             }
-            
+
             var loggerConfiguration = new LoggerConfiguration()
                 .MinimumLevel.Is(_configuration.General.LoggerMinimumLevel)
                 .WriteTo.File(latestLogPath, outputTemplate: _configuration.General.LogTemplate)
                 .WriteTo.File(rollingLogPath, outputTemplate: _configuration.General.LogTemplate, buffered: true, hooks: new GZipHooks());
-                
+
             if (_configuration.General.EnableMessageBoxSink)
                 loggerConfiguration.WriteTo.MessageBox(restrictedToMinimumLevel: _configuration.General.MessageBoxSinkMinimumLevel);
-                
+
             var logger = loggerConfiguration.CreateLogger();
 
             Avalonia.Logging.Logger.Sink = new AvaloniaSerilogSink(logger);

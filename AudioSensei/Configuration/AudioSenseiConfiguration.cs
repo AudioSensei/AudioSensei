@@ -7,12 +7,12 @@ namespace AudioSensei.Configuration
     public sealed class AudioSenseiConfiguration
     {
         [NotNull]
-        public GeneralConfiguration General { get; set; } = new GeneralConfiguration();
+        public GeneralConfiguration General { get; set; } = new();
         [NotNull]
-        public PlayerConfiguration Player { get; set; } = new PlayerConfiguration();
+        public PlayerConfiguration Player { get; set; } = new();
         [NotNull]
-        public BassConfiguration Bass { get; set; } = new BassConfiguration();
-    
+        public BassConfiguration Bass { get; set; } = new();
+
         [NotNull]
         [Pure]
         private static AudioSenseiConfiguration Create([NotNull] string filePath)

@@ -6,7 +6,7 @@ namespace AudioSensei.Bass.Native.Handles
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct MusicHandle : IEquatable<MusicHandle>
     {
-        public static readonly MusicHandle Null = new MusicHandle(0);
+        public static readonly MusicHandle Null = new(0);
 
         private readonly uint handle;
         private MusicHandle(uint handle) => this.handle = handle;

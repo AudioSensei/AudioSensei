@@ -55,8 +55,7 @@ namespace AudioSensei.ViewModels
         }
 
         // Playlists
-        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } =
-            new ObservableCollection<PlaylistViewModel>();
+        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } = new();
 
         public Playlist? CurrentlyPlayedPlaylist
         {
@@ -112,8 +111,8 @@ namespace AudioSensei.ViewModels
 
         public IAudioStream AudioStream { get; private set; }
 
-        private readonly DispatcherTimer _timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(100.0) };
-        private readonly Random _random = new Random(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
+        private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100.0) };
+        private readonly Random _random = new(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
 
         private volatile bool _disposed;
 
@@ -132,7 +131,7 @@ namespace AudioSensei.ViewModels
         private string _playlistDescription = "";
 
         // Playlists
-        private Playlist _currentlyVisiblePlaylist = new Playlist("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
+        private Playlist _currentlyVisiblePlaylist = new("", Guid.NewGuid(), "", "", new ObservableCollection<Track>());
         private Playlist? _currentlyPlayedPlaylist;
 
         // Tracks
@@ -143,7 +142,7 @@ namespace AudioSensei.ViewModels
         private const int ProtocolVersion = 1;
         private readonly ulong _typeHash;
         private TcpListener _playbackServer;
-        private readonly object _playbackServerLock = new object();
+        private readonly object _playbackServerLock = new();
 
         // Status update
         private readonly Thread _statusThread;
@@ -158,7 +157,7 @@ namespace AudioSensei.ViewModels
 
             AudioBackend = audioBackend;
             AudioBackend.Volume = playerConfiguration.DefaultVolume;
-            
+
             YoutubePlayer = new YoutubePlayer(audioBackend);
             _discordPresence = new DiscordPresence("668517213388668939");
             _statusThread = new Thread(StatusChecker)
@@ -562,7 +561,7 @@ namespace AudioSensei.ViewModels
 
                 foreach (var track in playlist.Tracks)
                 {
-                    Task.Run(async () => 
+                    Task.Run(async () =>
                     {
                         switch (track.Source)
                         {
@@ -580,7 +579,7 @@ namespace AudioSensei.ViewModels
                     });
                 }
 
-                Playlists.Add(new PlaylistViewModel 
+                Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,
                     Command = SelectPlaylistCommand,
@@ -786,7 +785,7 @@ namespace AudioSensei.ViewModels
             if (!string.IsNullOrWhiteSpace(_playlistName))
             {
                 var playlist = new Playlist(_playlistName, Guid.NewGuid(), _playlistAuthor, _playlistDescription, new ObservableCollection<Track>());
-                
+
                 Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,

@@ -6,7 +6,7 @@ namespace AudioSensei.Bass.Native.Handles
     [StructLayout(LayoutKind.Sequential)]
     public readonly struct FxHandle : IEquatable<FxHandle>
     {
-        public static readonly FxHandle Null = new FxHandle(0);
+        public static readonly FxHandle Null = new(0);
 
         private readonly uint handle;
         private FxHandle(uint handle) => this.handle = handle;

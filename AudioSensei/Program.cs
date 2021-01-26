@@ -28,7 +28,7 @@ namespace AudioSensei
         [CanBeNull]
         public static event Action Exit;
 
-        private static readonly object ExitLock = new object();
+        private static readonly object ExitLock = new();
         private static bool _exited;
 
         public static void TriggerExit()
