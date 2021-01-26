@@ -19,7 +19,7 @@
     <StackPanel Margin="18, 0, 15, 0">
       <Slider Name="EqualizerSlider80Hz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor80Hz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -28,7 +28,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider250Hz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor250Hz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -37,7 +37,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider500Hz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor500Hz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -46,7 +46,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider1kHz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor1kHz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -55,7 +55,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider2kHz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor2kHz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -64,7 +64,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider4kHz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor4kHz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -73,7 +73,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider8kHz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor8kHz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 
@@ -82,7 +82,7 @@
     <StackPanel Margin="0, 0, 15, 0">
       <Slider Name="EqualizerSlider16kHz"
       Height="200" Orientation="Vertical" HorizontalAlignment="Left"
-      Value="0" Minimum="-15" Maximum="15"
+      Value="{Binding GainFor16kHz, Mode=TwoWay}" Minimum="-15" Maximum="15"
       SmallChange="0.01" LargeChange="0.1"
       TickPlacement="BottomRight" TickFrequency="10"/>
 

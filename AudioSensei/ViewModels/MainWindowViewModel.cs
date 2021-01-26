@@ -883,7 +883,7 @@ namespace AudioSensei.ViewModels
         {
             var equalizerWindowViewModel = _equalizer.DataContext as EqualizerWindowViewModel;
 
-            if (!equalizerWindowViewModel.IsEffectApplied())
+            if (!equalizerWindowViewModel.IsEffectApplied)
                 equalizerWindowViewModel.AddAudioEffect(AudioStream);
         }
     }
