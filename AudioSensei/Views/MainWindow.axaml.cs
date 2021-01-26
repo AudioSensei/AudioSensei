@@ -6,7 +6,9 @@ using AudioSensei.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using System.Windows;
 using Avalonia.Markup.Xaml;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace AudioSensei.Views
 {
@@ -73,6 +75,67 @@ namespace AudioSensei.Views
         private void OnDragOver(object sender, DragEventArgs dragEventArgs)
         {
             dragEventArgs.DragEffects = DragDropEffects.Copy | DragDropEffects.Link;
+        }
+
+        private string _clipboardURL;
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.V)
+            {
+                GetURLFromClipboard();
+                AddTrack();
+            }
+        }
+
+        private async void GetURLFromClipboard()
+        {
+            _clipboardURL = await Application.Current.Clipboard.GetTextAsync();
+        }
+
+        private async void AddTrack()
+        {
+            var dataContext = DataContext as MainWindowViewModel;
+            var playlistPath = Path.Combine(App.ApplicationDataPath, "Playlists");
+
+            if (_clipboardURL.Contains(@"\"))
+            {
+                try
+                {
+                    var track = new Track(Source.File, _clipboardURL);
+                    track.LoadMetadataFromFile();
+                    dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
+                    dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
+                }
+                catch
+                {
+                    //exeption
+                }
+            }
+            else if (_clipboardURL.Contains("."))
+            {
+                try
+                {
+                    var uri = new Uri(_clipboardURL);
+                    var domain = uri.Host.Split(".")[uri.Host.StartsWith("www") ? 1 : 0];
+
+                    if (domain.Equals("youtube", StringComparison.CurrentCultureIgnoreCase) || domain.Equals("youtu", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        await Task.Run(async () =>
+                        {
+                            var track = new Track(Source.YouTube, _clipboardURL);
+                            var info = await dataContext.YoutubePlayer.GetInfo(track.Url);
+                            track.Name = info.Video.Title;
+                            track.Author = info.Video.Author;
+                            dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
+                            dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
+                        });
+                    }
+                }
+                catch
+                {
+                    //exeption
+                }
+            }
         }
     }
 }
