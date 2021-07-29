@@ -5,25 +5,6 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 99
-  ignore:
-  - dependency-name: Avalonia.Diagnostics
-    versions:
-    - 0.10.0
-  - dependency-name: Avalonia.Desktop
-    versions:
-    - 0.10.0
-  - dependency-name: Avalonia.Controls.DataGrid
-    versions:
-    - 0.10.0
-  - dependency-name: Avalonia.ReactiveUI
-    versions:
-    - 0.10.0
-  - dependency-name: Avalonia
-    versions:
-    - 0.10.0
-  - dependency-name: Avalonia.Xaml.Behaviors
-    versions:
-    - 0.10.0
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
