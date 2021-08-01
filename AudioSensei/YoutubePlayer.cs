@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using YoutubeExplode;
@@ -36,7 +35,7 @@ namespace AudioSensei
         public async Task<IAudioStream> Play([NotNull] string url)
         {
             var streamManifest = await _client.Videos.Streams.GetManifestAsync(url);
-            return _backend.Play(new Uri(streamManifest.GetAudioOnlyStreams().OrderBy(audioOnlyStream => audioOnlyStream.Bitrate.BitsPerSecond).Last().Url));
+            return _backend.Play(new Uri(streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate().Url));
         }
 
         public struct YoutubeInfo
