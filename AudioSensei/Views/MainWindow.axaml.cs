@@ -57,7 +57,7 @@ namespace AudioSensei.Views
                             var track = new Track(Source.YouTube, dragEventArgs.Data.GetText());
                             var info = await dataContext.YoutubePlayer.GetInfo(track.Url);
                             track.Name = info.Video.Title;
-                            track.Author = info.Video.Author;
+                            track.Author = info.Video.Author.Title;
                             dataContext.CurrentlyVisiblePlaylist.Tracks.Add(track);
                             dataContext.CurrentlyVisiblePlaylist.Save(Path.Combine(playlistPath, $"{dataContext.CurrentlyVisiblePlaylist.UniqueId}.json"));
                         });
