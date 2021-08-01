@@ -44,9 +44,7 @@ namespace AudioSensei.Bass
                 var filePath = Path.GetFullPath(uri.LocalPath);
 
                 if (!File.Exists(filePath))
-                {
                     return null;
-                }
 
                 _stream = new BassFileStream(filePath);
             }
