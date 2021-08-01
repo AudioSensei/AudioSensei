@@ -4,14 +4,14 @@ using System.Runtime.InteropServices;
 namespace AudioSensei.Discord
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct DiscordEventHandlers
+    internal unsafe struct DiscordEventHandlers
     {
         public IntPtr userData;
-        public DiscordDelegates.Ready readyCallback;
-        public DiscordDelegates.Disconnected disconnectedCallback;
-        public DiscordDelegates.Errored errorCallback;
-        public DiscordDelegates.JoinGame joinCallback;
-        public DiscordDelegates.SpectateGame spectateCallback;
-        public DiscordDelegates.JoinRequest requestCallback;
+        public delegate* unmanaged[Cdecl]<DiscordUserData*, IntPtr, void> readyCallback;
+        public delegate* unmanaged[Cdecl]<int, IntPtr, IntPtr, void> disconnectedCallback;
+        public delegate* unmanaged[Cdecl]<int, IntPtr, IntPtr, void> errorCallback;
+        public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> joinCallback;
+        public delegate* unmanaged[Cdecl]<IntPtr, IntPtr, void> spectateCallback;
+        public delegate* unmanaged[Cdecl]<DiscordUserData*, IntPtr, void> requestCallback;
     }
 }

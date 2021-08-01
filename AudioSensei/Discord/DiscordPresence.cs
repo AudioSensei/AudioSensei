@@ -1,92 +1,75 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Serilog;
 
 namespace AudioSensei.Discord
 {
-    public class DiscordPresence : IDisposable
+    public unsafe class DiscordPresence : IDisposable
     {
         private readonly int _sleepTime;
-        private volatile bool _disposed;
-        private readonly Thread _updateThread;
+        private volatile int _disposed;
 
         private static readonly object DisposeLock = new();
-        private static readonly object PresenceLock = new();
 
-        // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
-        private readonly DiscordEventHandlers _handlers;
-        private DiscordRichPresenceData _presence;
+        private readonly DiscordEventHandlers* _handlers;
+        private readonly DiscordRichPresenceData _presence;
 
-        private readonly DiscordDelegates.Ready _readyCallback;
-        private readonly DiscordDelegates.Disconnected _disconnectedCallback;
-        private readonly DiscordDelegates.Errored _errorCallback;
-        // ReSharper restore PrivateFieldCanBeConvertedToLocalVariable
-
-        public unsafe DiscordPresence(string appId, int sleepTime = 15)
+        public DiscordPresence(string appId, int sleepTime = 150)
         {
-            lock (PresenceLock)
+            lock (DisposeLock)
             {
                 _sleepTime = sleepTime;
-                _readyCallback = (request, _) =>
+
+                [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+                static void Ready(DiscordUserData* request, IntPtr _)
                 {
                     if (request == null)
                         Log.Warning("Received null user info from discord!");
                     else
                         Log.Information($"Discord connected to {Marshal.PtrToStringUTF8(request->username)}#{Marshal.PtrToStringUTF8(request->discriminator)} with ID {Marshal.PtrToStringUTF8(request->userId)}");
-                };
-                _disconnectedCallback = (code, message, _) => Log.Information($"Discord disconnected with code {code} with message {Marshal.PtrToStringUTF8(message)}");
-                _errorCallback = (code, message, _) => Log.Information($"Discord errored with code {code} with message {Marshal.PtrToStringUTF8(message)}");
-                _handlers = new DiscordEventHandlers
+                }
+                [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+                static void Disconnected(int code, IntPtr message, IntPtr _) =>
+                    Log.Information($"Discord disconnected with code {code} with message {Marshal.PtrToStringUTF8(message)}");
+                [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+                static void Errored(int code, IntPtr message, IntPtr _) =>
+                    Log.Information($"Discord errored with code {code} with message {Marshal.PtrToStringUTF8(message)}");
+
+                _handlers = UnmanagedUtils.Alloc<DiscordEventHandlers>(1);
+                *_handlers = new DiscordEventHandlers
                 {
                     userData = IntPtr.Zero,
-                    readyCallback = _readyCallback,
-                    disconnectedCallback = _disconnectedCallback,
-                    errorCallback = _errorCallback,
+                    readyCallback = &Ready,
+                    disconnectedCallback = &Disconnected,
+                    errorCallback = &Errored,
                     joinCallback = null,
                     spectateCallback = null,
                     requestCallback = null
                 };
-                lock (DisposeLock)
-                {
-                    DiscordNative.Discord_Initialize(appId, ref _handlers, false);
 
-                    _updateThread = new Thread(RunCallbacks) { IsBackground = true, Priority = ThreadPriority.BelowNormal };
-                    _updateThread.Start();
-                }
+                DiscordNative.Initialize(appId, _handlers, false);
+
+                new Thread(RunCallbacks) { IsBackground = true, Priority = ThreadPriority.BelowNormal }.Start();
 
                 _presence = new DiscordRichPresenceData
                 {
-                    state = null,
-                    details = null,
-                    startTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                    endTimestamp = 0,
-                    largeImageKey = null,
-                    largeImageText = null,
-                    smallImageKey = null,
-                    smallImageText = null,
-                    partyId = null,
-                    partySize = 0,
-                    partyMax = 0,
-                    partyPrivacy = DiscordPartyPrivacy.Private,
-                    matchSecret = null,
-                    joinSecret = null,
-                    spectateSecret = null,
-                    instance = 0
+                    StartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 };
-                DiscordNative.Discord_UpdatePresence(ref _presence);
+                DiscordNative.UpdatePresence(_presence.Handle);
             }
         }
 
         public void UpdatePresence(string state, string details, long startTimestamp, long endTimestamp)
         {
-            lock (PresenceLock)
+            lock (DisposeLock)
             {
-                _presence.state = state;
-                _presence.details = details;
-                _presence.startTimestamp = startTimestamp;
-                _presence.endTimestamp = endTimestamp;
-                DiscordNative.Discord_UpdatePresence(ref _presence);
+                _presence.State = state;
+                _presence.Details = details;
+                _presence.StartTimestamp = startTimestamp;
+                _presence.EndTimestamp = endTimestamp;
+                DiscordNative.UpdatePresence(_presence.Handle);
             }
         }
 
@@ -96,11 +79,9 @@ namespace AudioSensei.Discord
             {
                 lock (DisposeLock)
                 {
-                    if (_disposed)
-                    {
+                    if (_disposed != 0)
                         return;
-                    }
-                    DiscordNative.Discord_RunCallbacks();
+                    DiscordNative.RunCallbacks();
                 }
                 Thread.Sleep(_sleepTime);
             }
@@ -108,20 +89,14 @@ namespace AudioSensei.Discord
 
         private void Free()
         {
-            lock (PresenceLock)
+            lock (DisposeLock)
             {
-                lock (DisposeLock)
-                {
-                    if (_disposed)
-                    {
-                        return;
-                    }
-                    DiscordNative.Discord_ClearPresence();
-                    DiscordNative.Discord_Shutdown();
-                    _disposed = true;
-                }
-
-                _updateThread?.JoinOrTerminate(_sleepTime * 10);
+                if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                    return;
+                DiscordNative.ClearPresence();
+                DiscordNative.Shutdown();
+                UnmanagedUtils.Free(_handlers);
+                _presence.Dispose();
             }
         }
 
