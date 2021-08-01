@@ -563,7 +563,7 @@ namespace AudioSensei.ViewModels
                             case Source.YouTube:
                                 var info = await YoutubePlayer.GetInfo(track.Url);
                                 track.Name = info.Video.Title;
-                                track.Author = info.Video.Author;
+                                track.Author = info.Video.Author.Title;
                                 break;
                             default:
                                 throw new NotImplementedException();

@@ -35,7 +35,7 @@ namespace AudioSensei
         public async Task<IAudioStream> Play([NotNull] string url)
         {
             var streamManifest = await _client.Videos.Streams.GetManifestAsync(url);
-            return _backend.Play(new Uri(streamManifest.GetAudioOnly().WithHighestBitrate().Url));
+            return _backend.Play(new Uri(streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate().Url));
         }
 
         public struct YoutubeInfo
