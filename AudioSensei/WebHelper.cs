@@ -9,21 +9,21 @@ namespace AudioSensei
     internal static class WebHelper
     {
         [NotNull]
-        public static readonly string UserAgent = @"Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:81.0) Gecko/20100101 Firefox/81.0";
+        public static readonly string UserAgent = @"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0";
 
         static WebHelper()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                UserAgent = @$"Mozilla/5.0 (Windows NT {Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}; Win{(Environment.Is64BitOperatingSystem ? "64" : "32")}; {(Environment.Is64BitProcess ? "x64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                UserAgent = @$"Mozilla/5.0 (Windows NT {Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}; Win{(Environment.Is64BitOperatingSystem ? "64" : "32")}; {(Environment.Is64BitProcess ? "x64" : "x86")}; rv:90.0) Gecko/20100101 Firefox/90.0";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                UserAgent = @$"Mozilla/5.0 (X11; Ubuntu; Linux {(Environment.Is64BitProcess ? "x86_64" : "x86")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                UserAgent = @$"Mozilla/5.0 (X11; Ubuntu; Linux {(Environment.Is64BitProcess ? "x86_64" : "x86")}; rv:90.0) Gecko/20100101 Firefox/90.0";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                UserAgent = @$"Mozilla/5.0 (Macintosh; Intel Mac OS X {ConvertDarwinVersionToMacOsVersion($"{Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}")}; rv:81.0) Gecko/20100101 Firefox/81.0";
+                UserAgent = @$"Mozilla/5.0 (Macintosh; Intel Mac OS X {ConvertDarwinVersionToMacOsVersion($"{Environment.OSVersion.Version.Major}.{Environment.OSVersion.Version.Minor}")}; rv:90.0) Gecko/20100101 Firefox/90.0";
             }
         }
 
@@ -33,7 +33,8 @@ namespace AudioSensei
             var c = new HttpClient(new SocketsHttpHandler
             {
                 AllowAutoRedirect = true,
-                AutomaticDecompression = DecompressionMethods.All
+                AutomaticDecompression = DecompressionMethods.All,
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15)
             });
             c.DefaultRequestHeaders.UserAgent.Clear();
             c.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
@@ -88,7 +89,13 @@ namespace AudioSensei
                 "19.6" => "10.15",
                 "20.0" => "11.0",
                 "20.1" => "11.0",
-                _ => "10.15"
+                "20.2" => "11.1",
+                "20.3" => "11.2",
+                "20.4" => "11.3",
+                "20.5" => "11.4",
+                "20.6" => "11.5",
+                "21.0" => "12.0",
+                _ => "12.0"
             };
         }
     }

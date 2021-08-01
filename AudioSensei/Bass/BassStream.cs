@@ -16,21 +16,16 @@ namespace AudioSensei.Bass
             get
             {
                 if (_disposed)
-                {
                     return AudioStreamStatus.Invalid;
-                }
 
-                switch (BassNative.Singleton.GetChannelStatus(Handle))
+                return BassNative.Singleton.GetChannelStatus(Handle) switch
                 {
-                    case ChannelStatus.Playing:
-                        return AudioStreamStatus.Playing;
-                    case ChannelStatus.Stalled:
-                    case ChannelStatus.Paused:
-                    case ChannelStatus.PausedDevice:
-                        return AudioStreamStatus.Paused;
-                    default:
-                        return AudioStreamStatus.Invalid;
-                }
+                    ChannelStatus.Playing => AudioStreamStatus.Playing,
+                    ChannelStatus.Stalled => AudioStreamStatus.Paused,
+                    ChannelStatus.Paused => AudioStreamStatus.Paused,
+                    ChannelStatus.PausedDevice => AudioStreamStatus.Paused,
+                    _ => AudioStreamStatus.Invalid
+                };
             }
         }
 
@@ -50,23 +45,19 @@ namespace AudioSensei.Bass
         internal BassStream(StreamHandle handle)
         {
             if (!BassNative.Singleton.IsHandleValid(handle))
-            {
                 throw new InvalidOperationException();
-            }
 
             Handle = handle;
             Info = BassNative.Singleton.GetChannelInfo(Handle);
             if (Info.plugin != PluginHandle.Null && BassNative.Singleton.Plugins.TryGetValue(Info.plugin, out var value))
-            {
                 Log.Information($"Using bass plugin {value.manifest.Name} version {value.info.version} to play {Info.FileName}");
-            }
 
             BassNative.Singleton.PlayChannel(Handle);
 
-            _failProc = (u, channel, data, user) => BassNative.Singleton.Restart();
+            _failProc = (_, _, _, _) => BassNative.Singleton.Restart();
             _restartSync = BassNative.Singleton.SetSync(handle, BassSync.DevFail, 0, _failProc, IntPtr.Zero);
 
-            _freeProc = (u, channel, data, user) =>
+            _freeProc = (_, _, _, _) =>
             {
                 _streamFreed = true;
                 if (Monitor.TryEnter(_freeLock))
@@ -100,14 +91,11 @@ namespace AudioSensei.Bass
             if (Handle == StreamHandle.Null)
                 return;
             var lockWasTaken = false;
-            var temp = _freeLock;
             try
             {
-                Monitor.Enter(temp, ref lockWasTaken);
+                Monitor.Enter(_freeLock, ref lockWasTaken);
                 if (_streamFreed || _disposed || !BassNative.Singleton.IsHandleValid(Handle))
-                {
                     return;
-                }
 
                 BassNative.Singleton.RemoveSync(Handle, _restartSync);
                 BassNative.Singleton.StopChannel(Handle);
@@ -123,7 +111,7 @@ namespace AudioSensei.Bass
             {
                 if (lockWasTaken)
                 {
-                    Monitor.Exit(temp);
+                    Monitor.Exit(_freeLock);
                 }
             }
         }

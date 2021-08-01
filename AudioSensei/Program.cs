@@ -36,33 +36,20 @@ namespace AudioSensei
             lock (ExitLock)
             {
                 if (_exited)
-                {
                     return;
-                }
 
                 Log.Information("AudioSensei is exitting");
                 _exited = true;
-                try
+                foreach (Delegate handler in Exit?.GetInvocationList() ?? Array.Empty<Delegate>())
                 {
-                    var handlers = Exit?.GetInvocationList();
-                    if (handlers != null)
+                    try
                     {
-                        foreach (Delegate handler in handlers)
-                        {
-                            try
-                            {
-                                (handler as Action)?.Invoke();
-                            }
-                            catch
-                            {
-                                // ignore
-                            }
-                        }
+                        (handler as Action)?.Invoke();
                     }
-                }
-                catch
-                {
-                    // ignore
+                    catch
+                    {
+                        // ignore
+                    }
                 }
             }
         }
