@@ -1,156 +1,156 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:AudioSensei.ViewModels"
         xmlns:m="using:AudioSensei.Models"
+        xmlns:vm="using:AudioSensei.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AudioSensei.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="AudioSensei"
         MinWidth="800" 
         MinHeight="600"
-        x:CompileBindings='True'
+        x:CompileBindings="True"
         x:DataType="vm:MainWindowViewModel">
-  <Grid>
-    <Grid ColumnDefinitions="250,*" RowDefinitions="*,60">
-      <StackPanel Grid.Row="0" Orientation="Horizontal">
-        <StackPanel>
-          <Button Width="50" Height="50">
-            <Image Source="/Assets/menu.png" />
-          </Button>
 
-          <Button Width="50" Height="50">
-            <Image Source="/Assets/magnify.png" />
-          </Button>
+    <Window.Styles>
+        <Style Selector="Button.MediaControlButton">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Button.MediaControlButton > Image">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Width" Value="32" />
+        </Style>
+
+        <Style Selector="Image.PlaylistCover">
+            <Setter Property="Height" Value="150" />
+            <Setter Property="Width" Value="200" />
+        </Style>
+    </Window.Styles>
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid RowDefinitions="*,90" ColumnDefinitions="80,*">
+        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Width="80" Background="#E0E0E0">
+            <Button Height="60" Width="70" Margin="5 0 5 0">
+                <Image Source="{SvgImage /Assets/placeholder.svg}" />
+            </Button>
         </StackPanel>
 
-        <TabControl>
-          <TabItem>
-            <ScrollViewer>
-              <StackPanel>
-                <TextBox Margin="10,0,10,5"></TextBox>
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Background="#EFEFEF">
+            <TextBlock Text="Home" FontSize="24" Margin="35" />
 
-                <TextBlock Grid.Column="0" TextAlignment="Left" Margin="10,5">TRACKS</TextBlock>
+            <TextBlock Text="Your Playlists" Margin="35 0 35 10" />
 
-                <Button Height="30" Width="150" Margin="10,5" Command="{Binding AllTracksCommand}">All tracks</Button>
-                <Button Height="30" Width="150" Margin="10,5" Command="{Binding FavouriteTracksCommand}">Favourite tracks</Button>
-                <Button Height="30" Width="150" Margin="10,5" Command="{Binding RecentlyPlayedTracksCommand}">Recently played</Button>
-
-                <TextBlock TextAlignment="Left" Margin="10,5,0,0">PLAYLISTS</TextBlock>
-
-                <ItemsControl Margin="0,0,0,5" Items="{Binding Playlists}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Button x:Name="SelectPlaylistButton" Height="30" Width="150" Margin="10,10,10,0">
-                        <Button.Styles>
-                          <Style Selector="Button">
-                            <Setter Property="Command" Value="{Binding Command}" />
-                            <Setter Property="CommandParameter" Value="{Binding Playlist.UniqueId}" />
-                          </Style>
-                        </Button.Styles>
-                        <TextBlock Text="{Binding Playlist.Name}"/>
-                      </Button>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <Button Height="30" Width="150" Margin="10,5,10,5" Command="{Binding AddPlaylistCommand}">
-                  <Grid Width="150">
-                    <TextBlock HorizontalAlignment="Center">Add</TextBlock>
-                  </Grid>
-                </Button>
-              </StackPanel>
+            <ScrollViewer Margin="35 0 35 0">
+                <ItemsRepeater Items="{Binding Playlists}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="8" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="m:PlaylistModel">
+                            <Grid Height="200" Width="200" Background="#F7F7F7">
+                                <Border CornerRadius="10">
+                                    <Image Classes="PlaylistCover" Source="{Binding Cover, Mode=OneWay}" Stretch="Fill"
+                                           Height="200" Width="200" />
+                                </Border>
+                                <Grid RowDefinitions="150,50" ColumnDefinitions="200">
+                                    <Grid Grid.Row="1" Height="50" Width="200">
+                                        <Panel Background="#FFFFFF" Opacity="0.75" />
+                                        <StackPanel Height="50" Width="200">
+                                            <TextBlock Text="{Binding Path=Title, Mode=OneWay}" Padding="14 8 0 0" />
+                                            <TextBlock Classes="SecondaryText" Text="{Binding Time, Mode=OneWay}"
+                                                       Padding="14 0 0 0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
             </ScrollViewer>
-          </TabItem>
-        </TabControl>
-      </StackPanel>
 
-      <Grid Grid.Row="0" Grid.Column="1">
-        <TabControl SelectedIndex="{Binding SelectedPageIndex}">
-          <TabItem>
-            <DataGrid SelectionMode="Single" SelectedIndex="{Binding SelectedTrackIndex, Mode=TwoWay}" Items="{Binding CurrentlyVisiblePlaylist.Tracks}" DragDrop.AllowDrop="True">
-              <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" x:DataType="m:Track" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Author" x:DataType="m:Track" Binding="{Binding Author}" />
-                <DataGridTextColumn Header="Url" x:DataType="m:Track" Binding="{Binding Url}" />
-              </DataGrid.Columns>
-            </DataGrid>
-          </TabItem>
+            <TextBlock Text="Your Favorite Tracks" Margin="35 10 35 10" />
 
-          <TabItem></TabItem>
-          <TabItem></TabItem>
-        </TabControl>
-      </Grid>
+            <ScrollViewer Margin="35 0 35 0">
+                <ItemsRepeater Items="{Binding FavoriteTracks}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Vertical" Spacing="4" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="m:TrackModel">
+                            <Grid ColumnDefinitions="Auto,*,Auto" Height="70" Background="#F7F7F7">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left"
+                                            VerticalAlignment="Center">
+                                    <Image Height="50" Width="50" Margin="0 10 0 10" VerticalAlignment="Center" />
+                                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Playlist}" VerticalAlignment="Center"
+                                                   HorizontalAlignment="Left" />
+                                        <TextBlock Classes="SecondaryText" Text="{Binding Author}"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    </StackPanel>
+                                </StackPanel>
 
-      <Grid Grid.Row="1" Grid.ColumnSpan="2">
-        <Grid ColumnDefinitions="*,500,*" RowDefinitions="*,*">
-          <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" >
-            <Button Classes="PlayerButton" Command="{Binding ShuffleCommand}">
-              <Image Source="/Assets/shuffle.png"/>
-            </Button>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Time}" VerticalAlignment="Center" Margin="10 0 10 0" />
+                                    <Button Height="30" Width="30" VerticalAlignment="Center" Background="Transparent" Margin="10 0 10 0">
+                                        <Image Height="30" Width="30" Source="{SvgImage /Assets/three_dots.svg}" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
 
-            <Button Classes="PlayerButton" Command="{Binding PreviousCommand}">
-              <Image Source="/Assets/rewind.png"/>
-            </Button>
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="90" RowDefinitions="*"
+              ColumnDefinitions="Auto,*,Auto" Background="#D9D9D9">
 
-            <Button Classes="PlayerButton" Command="{Binding PlayOrPauseCommand}">
-              <Image Source="/Assets/play-pause.png"/>
-            </Button>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/previous.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/play.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/next.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/shuffle.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/placeholder.svg}" />
+                </Button>
+            </StackPanel>
 
-            <Button Classes="PlayerButton" Command="{Binding StopCommand}">
-              <Image Source="/Assets/stop.png"/>
-            </Button>
+            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 20 0">
+                <TextBlock Text="Russian Soul" HorizontalAlignment="Center" />
+                <TextBlock Text="Skott" HorizontalAlignment="Center" Margin="0 0 0 5" />
+                <ProgressBar VerticalAlignment="Stretch" />
+            </StackPanel>
 
-            <Button Classes="PlayerButton" Command="{Binding NextCommand}">
-              <Image Source="/Assets/fast-forward.png"/>
-            </Button>
-
-            <Button Classes="PlayerButton" Command="{Binding RepeatCommand}">
-              <Image Source="/Assets/repeat.png"/>
-            </Button>
-          </StackPanel>
-
-          <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical">
-            <Grid ColumnDefinitions="*,*">
-              <TextBlock Grid.Column="0" Text="{Binding CurrentTimeFormatted}" TextAlignment="Left" VerticalAlignment="Center" HorizontalAlignment="Left" />
-              <TextBlock Grid.Column="1" Text="{Binding TotalTimeFormatted}" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" />
-            </Grid>
-
-            <ProgressBar Value="{Binding Total}" Margin="0,0,0,0" />
-          </StackPanel>
-
-          <StackPanel Grid.Column="2" Grid.RowSpan="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-            <Slider Width="100" Maximum="100" Value="{Binding AudioBackend.Volume, Mode=TwoWay}" />
-          </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/placeholder.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/placeholder.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/placeholder.svg}" />
+                </Button>
+                <Button Classes="MediaControlButton" Margin="20 0 20 0">
+                    <Image Source="{SvgImage /Assets/three_dots.svg}" />
+                </Button>
+            </StackPanel>
         </Grid>
-      </Grid>
     </Grid>
-    <Border IsVisible="{Binding IsPlaylistCreatorVisible}" Background="#40000000">
-      <Grid RowDefinitions="*,2*,*" ColumnDefinitions="*,*,*">
-        <DockPanel Grid.Row="1" Grid.Column="1" LastChildFill="True" Background="#FF282828">
-          <DockPanel Margin="10,5,10,0" DockPanel.Dock="Top">
-            <TextBlock FontSize="32">Playlist creator</TextBlock>
-            <Button Width="25" Height="25" Margin="0,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding CancelPlaylistCreationCommand}">
-              <Image Source="/Assets/close.png" />
-            </Button>
-          </DockPanel>
-          <StackPanel DockPanel.Dock="Top" VerticalAlignment="Center">
-            <TextBlock Margin="10,5,10,0">Name</TextBlock>
-            <TextBox Watermark="Name" Text="{Binding PlaylistName, Mode=TwoWay}" Margin="10,5,10,0"/>
-            <TextBlock Margin="10,5,10,0">Author</TextBlock>
-            <TextBox Watermark="Author" Text="{Binding PlaylistAuthor, Mode=TwoWay}" Margin="10,5,10,0"/>
-            <TextBlock Margin="10,5,10,0">Description</TextBlock>
-            <TextBox Watermark="Description" Text="{Binding PlaylistDescription, Mode=TwoWay}" Margin="10,5,10,0"/>
-          </StackPanel>
-          <Grid ColumnDefinitions="*,5,*" DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Margin="10,0,10,10">
-            <Button Grid.Column="0" Command="{Binding CreatePlaylistCommand}">Create playlist</Button>
-            <Button Grid.Column="2" Command="{Binding CancelPlaylistCreationCommand}">Cancel</Button>
-          </Grid>
-        </DockPanel>
-      </Grid>
-    </Border>
-  </Grid>
 </Window>

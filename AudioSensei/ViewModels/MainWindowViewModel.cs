@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,25 @@ namespace AudioSensei.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase, IDisposable
     {
+        public List<PlaylistModel> Playlists { get; set; } = new()
+        {
+            new PlaylistModel("avares://AudioSensei/Assets/melon_surface.jpg", "EZ", "21h 37m"),
+            new PlaylistModel("avares://AudioSensei/Assets/color_mix.png", "EZZ", "4h 20m"),
+            new PlaylistModel("avares://AudioSensei/Assets/gradient.png", "EZZZ", "66h 6m")
+        };
+
+        public List<TrackModel> FavoriteTracks { get; set; } = new()
+        {
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25"),
+            new TrackModel("Accelerate", "Susanne Sundfor | Ten Love Songs", "5:25")
+        };
+
         // Pages
         public int SelectedPageIndex
         {
@@ -52,9 +72,6 @@ namespace AudioSensei.ViewModels
             get => _playlistAuthor;
             set => this.RaiseAndSetIfChanged(ref _playlistAuthor, value, nameof(PlaylistAuthor));
         }
-
-        // Playlists
-        public ObservableCollection<PlaylistViewModel> Playlists { get; set; } = new();
 
         public Playlist? CurrentlyPlayedPlaylist
         {
@@ -571,17 +588,17 @@ namespace AudioSensei.ViewModels
                     });
                 }
 
-                Playlists.Add(new PlaylistViewModel
+                /*Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,
                     Command = SelectPlaylistCommand,
-                });
+                });*/
             }
 
-            if (Playlists.Count > 0)
+            /*if (Playlists.Count > 0)
             {
                 CurrentlyVisiblePlaylist = Playlists[0].Playlist;
-            }
+            }*/
         }
 
         private async Task PlayOrPause()
@@ -773,11 +790,11 @@ namespace AudioSensei.ViewModels
             {
                 var playlist = new Playlist(_playlistName, Guid.NewGuid(), _playlistAuthor, _playlistDescription, new ObservableCollection<Track>());
 
-                Playlists.Add(new PlaylistViewModel
+                /*Playlists.Add(new PlaylistViewModel
                 {
                     Playlist = playlist,
                     Command = SelectPlaylistCommand,
-                });
+                });*/
             }
 
             CancelPlaylistCreation();
@@ -793,7 +810,7 @@ namespace AudioSensei.ViewModels
 
         private void SelectPlaylist(Guid uniqueId)
         {
-            CurrentlyVisiblePlaylist = Playlists.Select(playlist => playlist.Playlist).First(playlist => playlist.UniqueId == uniqueId);
+            //CurrentlyVisiblePlaylist = Playlists.Select(playlist => playlist.Playlist).First(playlist => playlist.UniqueId == uniqueId);
         }
 
         private async Task Play(Track track)

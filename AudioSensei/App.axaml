@@ -7,24 +7,22 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
-        <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseDark.xaml"/>
-		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
+        <FluentTheme Mode="Light"/>
+        
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#EFEFEF" />
+        </Style>
+        
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#555555" />
+        </Style>
 
-		<Style Selector="Button">
-			<Setter Property="Cursor" Value="Hand" />
-		</Style>
-
-		<Style Selector="Button.PlayerButton">
-			<Setter Property="Width" Value="25" />
-			<Setter Property="Height" Value="25" />
-			<Setter Property="Margin" Value="5,0" />
-			<Setter Property="Background" Value="Transparent" />
-			<Setter Property="BorderBrush" Value="Transparent" />
-		</Style>
-
-		<Style Selector="TabItem">
-			<Setter Property="IsVisible" Value="False" />
-		</Style>
+        <Style Selector="TextBlock.SecondaryText">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Opacity" Value="0.7" />
+        </Style>
     </Application.Styles>
 </Application>
