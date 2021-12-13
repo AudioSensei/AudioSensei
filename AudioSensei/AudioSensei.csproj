@@ -60,7 +60,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.6" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.6" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.6" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.6.10" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="0.10.10.4" />
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
