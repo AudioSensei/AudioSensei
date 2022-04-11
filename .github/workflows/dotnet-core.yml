@@ -51,7 +51,7 @@ jobs:
       run: dotnet test --runtime ${{ matrix.target }}-${{ matrix.arch }} -f ${{ matrix.framework }}
       
     - name: Upload ${{ matrix.target }}-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: AudioSensei-${{ matrix.target }}-${{ matrix.arch }}
         path: ${{ github.workspace }}/AudioSensei/bin/Release/${{ matrix.framework }}/${{ matrix.target }}-${{ matrix.arch }}/publish
