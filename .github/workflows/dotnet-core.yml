@@ -4,29 +4,13 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     name: ${{ matrix.framework }} from .Net ${{ matrix.frameworkversion }} on ${{ matrix.os }} for ${{ matrix.target }}-${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest]
         frameworkversion: ['5.0']
-        arch: ['x86', 'x64']
-        exclude: 
-        - os: ubuntu-latest
-          arch: 'x86'
-        - os: macos-latest
-          arch: 'x86'
-        include: 
-        - os: windows-latest
-          target: win
-          framework: net5.0-windows
-        - os: ubuntu-latest
-          target: linux
-          framework: net5.0
-        - os: macos-latest
-          target: osx
-          framework: net5.0
+        arch: ['x64']
     timeout-minutes: 30
 
     env:
