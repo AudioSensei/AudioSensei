@@ -11,6 +11,10 @@ jobs:
         os: [windows-latest]
         frameworkversion: ['5.0']
         arch: ['x64']
+        include: 
+        - os: windows-latest
+          target: win
+          framework: net5.0-windows
     timeout-minutes: 30
 
     env:
@@ -18,7 +22,7 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     steps:
-    - uses: actions/checkout@v2.4.0
+    - uses: actions/checkout@v3.5.2
       
     - name: Setup .Net
       uses: actions/setup-dotnet@v3.2.0
