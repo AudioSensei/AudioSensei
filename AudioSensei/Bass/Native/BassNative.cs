@@ -9,7 +9,7 @@ using Serilog;
 
 namespace AudioSensei.Bass.Native
 {
-    internal class BassNative : IDisposable
+    internal unsafe class BassNative : IDisposable
     {
 #if X64
         private const string Arch = "X64";
@@ -54,7 +54,7 @@ namespace AudioSensei.Bass.Native
         }
 #endif
 
-        public unsafe BassNative(BassConfiguration bassConfiguration, IntPtr windowHandle = default)
+        public BassNative(BassConfiguration bassConfiguration, IntPtr windowHandle = default)
         {
             lock (LoadLock)
             {
@@ -234,7 +234,7 @@ namespace AudioSensei.Bass.Native
 
         public StreamHandle CreateStreamFromUrl(string url, string[] webHeaders = null)
         {
-            if (webHeaders != null && webHeaders.Length > 0)
+            if (webHeaders is {Length: > 0})
             {
                 url += "\r\n" + string.Join("\r\n", webHeaders) + "\r\n";
             }
@@ -574,7 +574,7 @@ namespace AudioSensei.Bass.Native
             }
         }
 
-        public SyncHandle SetSync(MusicHandle handle, BassSync type, ulong param, SyncProc callback, IntPtr user)
+        public SyncHandle SetSync(MusicHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> callback, IntPtr user)
         {
             var syncHandle = BASS_ChannelSetSync(handle, type, param, callback, user);
             if (syncHandle == SyncHandle.Null)
@@ -585,7 +585,7 @@ namespace AudioSensei.Bass.Native
             return syncHandle;
         }
 
-        public SyncHandle SetSync(StreamHandle handle, BassSync type, ulong param, SyncProc callback, IntPtr user)
+        public SyncHandle SetSync(StreamHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> callback, IntPtr user)
         {
             var syncHandle = BASS_ChannelSetSync(handle, type, param, callback, user);
             if (syncHandle == SyncHandle.Null)
@@ -596,7 +596,7 @@ namespace AudioSensei.Bass.Native
             return syncHandle;
         }
 
-        public SyncHandle SetSync(RecordHandle handle, BassSync type, ulong param, SyncProc callback, IntPtr user)
+        public SyncHandle SetSync(RecordHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> callback, IntPtr user)
         {
             var syncHandle = BASS_ChannelSetSync(handle, type, param, callback, user);
             if (syncHandle == SyncHandle.Null)
@@ -658,7 +658,7 @@ namespace AudioSensei.Bass.Native
         private static extern bool BASS_PluginFree(PluginHandle handle);
 
         [DllImport(Bass)]
-        private static extern unsafe BassPluginInfo* BASS_PluginGetInfo(PluginHandle handle);
+        private static extern BassPluginInfo* BASS_PluginGetInfo(PluginHandle handle);
 
         [DllImport(Bass)]
         private static extern bool BASS_Init(int device, uint frequency, BassInitFlags flags, IntPtr window, IntPtr clsid);
@@ -828,26 +828,20 @@ namespace AudioSensei.Bass.Native
         [DllImport(Bass)]
         private static extern StreamHandle BASS_StreamCreateFile(bool memory, [MarshalAs(StringMarshal)] string file, ulong offset, ulong length, StreamFlags flags);
 
-        [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-        private delegate void DownloadProc(IntPtr buffer, uint length, IntPtr user);
-
         [DllImport(Bass)]
-        private static extern StreamHandle BASS_StreamCreateURL([MarshalAs(StringMarshal)] string url, uint offset, StreamFlags flags, DownloadProc proc, IntPtr user);
+        private static extern StreamHandle BASS_StreamCreateURL([MarshalAs(StringMarshal)] string url, uint offset, StreamFlags flags, delegate* unmanaged<IntPtr, uint, IntPtr, void> proc, IntPtr user);
 
         [DllImport(Bass)]
         private static extern StreamHandle BASS_StreamCreate(uint freq, uint chans, StreamFlags flags, IntPtr proc, IntPtr user);
 
-        [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-        internal delegate void SyncProc(uint handle, uint channel, uint data, IntPtr user);
+        [DllImport(Bass)]
+        private static extern SyncHandle BASS_ChannelSetSync(MusicHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> proc, IntPtr user);
 
         [DllImport(Bass)]
-        private static extern SyncHandle BASS_ChannelSetSync(MusicHandle handle, BassSync type, ulong param, SyncProc proc, IntPtr user);
+        private static extern SyncHandle BASS_ChannelSetSync(StreamHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> proc, IntPtr user);
 
         [DllImport(Bass)]
-        private static extern SyncHandle BASS_ChannelSetSync(StreamHandle handle, BassSync type, ulong param, SyncProc proc, IntPtr user);
-
-        [DllImport(Bass)]
-        private static extern SyncHandle BASS_ChannelSetSync(RecordHandle handle, BassSync type, ulong param, SyncProc proc, IntPtr user);
+        private static extern SyncHandle BASS_ChannelSetSync(RecordHandle handle, BassSync type, ulong param, delegate* unmanaged<uint, uint, uint, IntPtr, void> proc, IntPtr user);
 
         [DllImport(Bass)]
         private static extern bool BASS_ChannelRemoveSync(MusicHandle handle, SyncHandle sync);

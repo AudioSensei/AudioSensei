@@ -112,7 +112,8 @@ namespace AudioSensei.ViewModels
         private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(100.0) };
         private readonly Random _random = new(RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue));
 
-        private volatile bool _disposed;
+        private volatile int _disposed;
+        private readonly object _disposeLock = new();
 
         private bool _repeat;
         private bool _shuffle;
@@ -156,9 +157,6 @@ namespace AudioSensei.ViewModels
 
             YoutubePlayer = new YoutubePlayer(audioBackend);
             _discordPresence = new DiscordPresence("668517213388668939");
-            _statusThread = new Thread(StatusChecker)
-            { IsBackground = true, Priority = ThreadPriority.BelowNormal };
-            _statusThread.Start();
 
             InitializeCommands();
             LoadPlaylists();
@@ -182,36 +180,44 @@ namespace AudioSensei.ViewModels
             };
             _timer.Tick += Tick;
 
+            _statusThread = new Thread(StatusChecker)
+            { IsBackground = true, Priority = ThreadPriority.BelowNormal };
+            _statusThread.Start();
+
             ProcessStartupData();
         }
 
         private void StatusChecker()
         {
-            while (!_disposed)
+            while (true)
             {
-                var status = AudioStream?.Status ?? AudioStreamStatus.Invalid;
-                if (_lastStatus != status)
+                lock (_disposeLock)
                 {
-                    _lastStatus = status;
-                    StatusChanged?.Invoke(status);
+                    if (_disposed != 0)
+                        return;
+                    var status = AudioStream?.Status ?? AudioStreamStatus.Invalid;
+                    if (_lastStatus != status)
+                    {
+                        _lastStatus = status;
+                        StatusChanged?.Invoke(status);
+                    }
                 }
 
-                Thread.Sleep(100);
+                Thread.Sleep(150);
             }
         }
 
         private void Free()
         {
-            if (_disposed)
+            lock (_disposeLock)
             {
-                return;
+                if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                    return;
+                _discordPresence.Dispose();
+                AudioStream?.Dispose();
+                AudioStream = null;
+                AudioBackend.Dispose();
             }
-            _disposed = true;
-            _discordPresence.Dispose();
-            _statusThread?.JoinOrTerminate(300);
-            AudioStream?.Dispose();
-            AudioStream = null;
-            AudioBackend.Dispose();
         }
 
         public void Dispose()

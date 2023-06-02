@@ -1,10 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace AudioSensei
 {
-    public static class UnmanagedUtils
+    public static unsafe class UnmanagedUtils
     {
-        public static unsafe int Strlen(byte* data, int maxSize = int.MaxValue)
+        public static int Strlen(byte* data, int maxSize = int.MaxValue)
         {
             for (int i = 0; i < maxSize; i++)
             {
@@ -39,15 +41,15 @@ namespace AudioSensei
             return (uint)(hiword << (sizeof(ushort) * 8)) | loword;
         }
 
-        public static bool JoinOrTerminate(this Thread thread, int timeout)
+        public static T* Alloc<T>(int count) where T : unmanaged
         {
-            var joined = thread.Join(timeout);
-            if (!joined)
-            {
-                thread.Interrupt();
-            }
+            return (T*)Marshal.AllocCoTaskMem(sizeof(T) * count);
+        }
 
-            return joined;
+        public static void Free(void* ptr)
+        {
+            if (ptr != null)
+                Marshal.FreeCoTaskMem(new IntPtr(ptr));
         }
     }
 }
