@@ -11,6 +11,10 @@ jobs:
         os: [windows-latest]
         frameworkversion: ['5.0']
         arch: ['x64']
+        include: 
+        - os: windows-latest
+          target: win
+          framework: net5.0-windows
     timeout-minutes: 30
 
     env:
